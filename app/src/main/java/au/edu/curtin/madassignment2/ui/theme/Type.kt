@@ -16,8 +16,20 @@ val Typography = Typography(
     titleLarge = TextStyle(
         fontFamily = GoudyBookletter1911,
         fontWeight = FontWeight.Normal,
-        fontSize = 56.sp,
-        lineHeight = 36.sp,
-        letterSpacing = 1.sp
+        fontSize = 50.sp,
+        lineHeight = 35.sp,
+        letterSpacing = 0.5.sp
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = GoudyBookletter1911,
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp,
+        lineHeight = 30.sp,
+        letterSpacing = 0.sp
+    ),
+    labelLarge = TextStyle(
+        fontFamily = GoudyBookletter1911,
+        fontWeight = FontWeight.Medium,
+        fontSize = 15.sp
     )
 )
