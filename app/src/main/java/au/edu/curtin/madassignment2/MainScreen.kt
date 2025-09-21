@@ -53,7 +53,8 @@ fun MainScreen() {
         // Search bar
         Row (
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(10.dp),
 
             horizontalArrangement = Arrangement.Center
         ) {
