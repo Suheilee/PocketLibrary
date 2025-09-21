@@ -18,14 +18,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PocketLibraryTheme {
-                Scaffold() { innerPadding ->
+                Scaffold { innerPadding ->
                     Surface(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        MainScreenPreview()
+                        NavigationScreen()
                     }
                 }
             }

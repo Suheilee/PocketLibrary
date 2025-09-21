@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -18,13 +18,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onBookClick: (Book) -> Unit = {}
+) {
     Column {
         // App title
         Row (
-            modifier = Modifier
-                .fillMaxWidth(),
-
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
             Text (
@@ -33,13 +33,11 @@ fun MainScreen() {
             )
         }
 
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // App tagline
         Row (
-            modifier = Modifier
-                .fillMaxWidth(),
-
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
@@ -48,35 +46,35 @@ fun MainScreen() {
             )
         }
 
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Search bar
         Row (
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-
             horizontalArrangement = Arrangement.Center
         ) {
             SearchBarPreview()
         }
 
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-
+        // Books list
         Row (
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-
             horizontalArrangement = Arrangement.Center
         ) {
             Column (
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
+                modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
                 sampleBooks.forEach { book ->
-                    BookCard(book = book)
+                    BookCard(
+                        book = book,
+                        onClick = { onBookClick(book) }
+                    )
                 }
             }
         }
