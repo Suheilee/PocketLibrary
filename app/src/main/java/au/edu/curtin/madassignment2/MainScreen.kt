@@ -13,18 +13,66 @@ import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun MainScreen(
-    onBookClick: (BookEntity) -> Unit = {},
-    stateManager: BookStateManager? = null
+    onBookClick: (BookEntity) -> Unit = {}
 ) {
-    // Always use the provided state manager (created in NavigationScreen)
-    val bookStateManager = stateManager!!
+    // Sample data for UI only
+    val sampleBooks = remember {
+        listOf(
+            BookEntity(
+                id = "1",
+                isbn = "9780439139601",
+                title = "Harry Potter and the Philosopher's Stone",
+                author = "J.K. Rowling",
+                year = 1997,
+                category = "Fantasy",
+                coverImageRes = android.R.drawable.ic_menu_gallery,
+                description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry.",
+                isFavorite = true
+            ),
+            BookEntity(
+                id = "2",
+                isbn = "9780439064873",
+                title = "Harry Potter and the Chamber of Secrets",
+                author = "J.K. Rowling",
+                year = 1998,
+                category = "Fantasy",
+                coverImageRes = android.R.drawable.ic_menu_gallery,
+                description = "Harry's second year at Hogwarts brings new challenges...",
+                isFavorite = false
+            ),
+            BookEntity(
+                id = "3",
+                isbn = "9780141439518",
+                title = "Pride and Prejudice",
+                author = "Jane Austen",
+                year = 1813,
+                category = "Romance",
+                coverImageRes = android.R.drawable.ic_menu_gallery,
+                description = "A romantic novel of manners written by Jane Austen.",
+                isFavorite = false
+            )
+        )
+    }
 
-    // Get state values
-    val books by bookStateManager.filteredBooks
-    val categories by bookStateManager.categories
-    val selectedCategory by bookStateManager.selectedCategory
-    val showFavoritesOnly by bookStateManager.showFavoritesOnly
-    val searchQuery by bookStateManager.searchQuery
+    val categories = remember { listOf("All", "Fantasy", "Romance", "Mystery") }
+    var selectedCategory by remember { mutableStateOf("All") }
+    var showFavoritesOnly by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Filter books based on current selections
+    val filteredBooks = remember(sampleBooks, selectedCategory, showFavoritesOnly, searchQuery) {
+        sampleBooks.filter { book ->
+            val matchesSearch = if (searchQuery.isBlank()) true
+            else book.title.contains(searchQuery, ignoreCase = true) ||
+                    book.author.contains(searchQuery, ignoreCase = true)
+
+            val matchesCategory = if (selectedCategory == "All") true else book.category == selectedCategory
+            val matchesFavorites = if (showFavoritesOnly) book.isFavorite else true
+
+            matchesSearch && matchesCategory && matchesFavorites
+        }
+    }
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -63,7 +111,7 @@ fun MainScreen(
             // Search bar
             SearchBar(
                 searchQuery = searchQuery,
-                onSearch = { query -> bookStateManager.updateSearchQuery(query) }
+                onSearch = { query -> searchQuery = query }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -73,8 +121,8 @@ fun MainScreen(
                 categories = categories,
                 selectedCategory = selectedCategory,
                 showFavoritesOnly = showFavoritesOnly,
-                onCategorySelected = { category -> bookStateManager.updateSelectedCategory(category) },
-                onFavoritesToggle = { bookStateManager.toggleFavoritesFilter() }
+                onCategorySelected = { category -> selectedCategory = category },
+                onFavoritesToggle = { showFavoritesOnly = !showFavoritesOnly }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -85,7 +133,7 @@ fun MainScreen(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "${books.size} ${if (books.size == 1) "book" else "books"} found",
+                    text = "${filteredBooks.size} ${if (filteredBooks.size == 1) "book" else "books"} found",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -94,7 +142,7 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Books list
-            if (books.isEmpty()) {
+            if (filteredBooks.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -115,11 +163,11 @@ fun MainScreen(
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(books) { book ->
+                    items(filteredBooks) { book ->
                         BookCard(
                             book = book,
                             onBookClick = onBookClick,
-                            onFavoriteClick = { bookId -> bookStateManager.toggleFavorite(bookId) }
+                            onFavoriteClick = { /* Handle favorite toggle in UI only version */ }
                         )
                     }
                 }
@@ -132,50 +180,6 @@ fun MainScreen(
 @Composable
 fun MainScreenPreview() {
     PocketLibraryTheme {
-        MainScreenContent(
-            books = listOf(
-                BookEntity(
-                    id = "1",
-                    isbn = "9780439139601",
-                    title = "Harry Potter and the Philosopher's Stone",
-                    author = "J.K. Rowling",
-                    year = 1997,
-                    category = "Fantasy",
-                    coverImageRes = android.R.drawable.ic_menu_gallery,
-                    description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry.",
-                    isFavorite = true
-                )
-            ),
-            categories = listOf("All", "Fantasy"),
-            selectedCategory = "All",
-            showFavoritesOnly = false,
-            searchQuery = "",
-            onBookClick = {},
-            onSearch = {},
-            onCategorySelected = {},
-            onFavoritesToggle = {},
-            onFavoriteClick = {}
-        )
+        MainScreen()
     }
-}
-
-@Composable
-private fun MainScreenContent(
-    books: List<BookEntity>,
-    categories: List<String>,
-    selectedCategory: String,
-    showFavoritesOnly: Boolean,
-    searchQuery: String,
-    onBookClick: (BookEntity) -> Unit,
-    onSearch: (String) -> Unit,
-    onCategorySelected: (String) -> Unit,
-    onFavoritesToggle: () -> Unit,
-    onFavoriteClick: (String) -> Unit
-) {
-    // (unchanged – used only for preview)
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) { /* …exactly like above… */ }
 }

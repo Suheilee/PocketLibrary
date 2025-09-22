@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp")
 }
 
 android {
@@ -60,26 +59,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Compose ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-
-    // Navigation
-    implementation("androidx.navigation:navigation-compose:2.9.4")
-
-    // Room
-    implementation("androidx.room:room-runtime:2.8.0")
-    implementation("androidx.room:room-ktx:2.8.0")
-    ksp("androidx.room:room-compiler:2.8.0")
-
-    // Networking
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
-    implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
-
-    // Image loading
-    implementation("io.coil-kt:coil-compose:2.7.0")
-
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.9.1")
 }

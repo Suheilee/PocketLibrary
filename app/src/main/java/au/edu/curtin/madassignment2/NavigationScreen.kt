@@ -2,7 +2,6 @@ package au.edu.curtin.madassignment2
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
@@ -10,14 +9,6 @@ import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 fun NavigationScreen(
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    // Single shared state manager instance
-    val stateManager = remember {
-        BookStateManager(context, coroutineScope)
-    }
-
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
     var selectedBook by remember { mutableStateOf<BookEntity?>(null) }
 
@@ -27,8 +18,7 @@ fun NavigationScreen(
                 onBookClick = { book ->
                     selectedBook = book
                     currentScreen = Screen.BookDetail
-                },
-                stateManager = stateManager
+                }
             )
         }
         is Screen.BookDetail -> {
@@ -36,10 +26,9 @@ fun NavigationScreen(
                 BookDetailScreen(
                     book = book,
                     onBackClick = { currentScreen = Screen.Main },
-                    onShareClick = { /* TODO share */ },
+                    onShareClick = { /* TODO: Implement share functionality */ },
                     onFavoriteToggle = { bookId ->
-                        stateManager.toggleFavorite(bookId)
-                        // Reflect the change on the local selected book
+                        // Update the selected book's favorite status for UI only
                         selectedBook = selectedBook?.copy(isFavorite = !book.isFavorite)
                     }
                 )

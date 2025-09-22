@@ -1,5 +1,6 @@
 package au.edu.curtin.madassignment2
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,15 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 
 @Composable
 fun BookDetailScreen(
@@ -79,24 +78,19 @@ fun BookDetailScreen(
                         .padding(16.dp),
                     verticalAlignment = Alignment.Top
                 ) {
-                    if (book.coverImageUrl != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(book.coverImageUrl)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = "Book cover for ${book.title}",
-                            modifier = Modifier.size(120.dp),
-                            contentScale = ContentScale.Crop,
-                            placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
-                            error = painterResource(id = android.R.drawable.ic_menu_gallery)
-                        )
-                    } else if (book.coverImageRes != null) {
-                        Icon(
+                    if (book.coverImageRes != null) {
+                        Image(
                             painter = painterResource(id = book.coverImageRes),
                             contentDescription = "Book cover for ${book.title}",
                             modifier = Modifier.size(120.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                            contentDescription = "Book cover for ${book.title}",
+                            modifier = Modifier.size(120.dp),
+                            contentScale = ContentScale.Crop
                         )
                     }
 
@@ -108,7 +102,7 @@ fun BookDetailScreen(
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             maxLines = 3,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))

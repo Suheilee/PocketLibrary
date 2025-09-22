@@ -11,14 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 
 @Composable
 fun BookCard(
@@ -39,21 +36,18 @@ fun BookCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            if (book.coverImageUrl != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(book.coverImageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Book cover for ${book.title}",
-                    modifier = Modifier.size(80.dp),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
-                    error = painterResource(id = android.R.drawable.ic_menu_gallery)
-                )
-            } else if (book.coverImageRes != null) {
+            // Book cover image
+            if (book.coverImageRes != null) {
                 Image(
                     painter = painterResource(id = book.coverImageRes),
+                    contentDescription = "Book cover for ${book.title}",
+                    modifier = Modifier.size(80.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Default placeholder
+                Image(
+                    painter = painterResource(id = android.R.drawable.ic_menu_gallery),
                     contentDescription = "Book cover for ${book.title}",
                     modifier = Modifier.size(80.dp),
                     contentScale = ContentScale.Crop
