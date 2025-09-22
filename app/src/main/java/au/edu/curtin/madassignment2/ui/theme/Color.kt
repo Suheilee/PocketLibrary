@@ -19,3 +19,11 @@ val InkBlack = Color(0xFF2B2B2B)
 
 // Subtle Borders (Antique Gray)
 val AntiqueGray = Color(0xFF7E7E7E)
+
+// Additional library-themed colors
+val BookSpine = Color(0xFF8D6E63) // Medium brown for book spines
+val GoldLeaf = Color(0xFFFFD700) // Gold for elegant accents
+val DeepMahogany = Color(0xFF4A2C2A) // Rich dark wood
+val CreamyWhite = Color(0xFFFFFDD0) // Soft cream for highlights
+val DustyBlue = Color(0xFF6B8CAE) // Muted blue for subtle accents
+val WornCopper = Color(0xFFB87333) // Aged copper for metallic touches

@@ -1,6 +1,5 @@
 package au.edu.curtin.madassignment2
 
-import PocketLibraryTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -19,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun SearchBar(

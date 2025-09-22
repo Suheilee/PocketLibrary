@@ -5,6 +5,7 @@ data class Book(
     val title: String,
     val author: String,
     val year: Int,
-    val coverImage: String?,
-    val description: String = "No description available"
+    val category: String,
+    val coverImageRes: Int,
+    val description: String
 )

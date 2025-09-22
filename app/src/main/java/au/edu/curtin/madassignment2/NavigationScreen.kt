@@ -1,12 +1,12 @@
 package au.edu.curtin.madassignment2
 
-import PocketLibraryTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun NavigationScreen() {

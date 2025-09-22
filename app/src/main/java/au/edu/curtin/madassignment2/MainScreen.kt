@@ -1,6 +1,5 @@
 package au.edu.curtin.madassignment2
 
-import PocketLibraryTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun MainScreen(
@@ -29,7 +29,8 @@ fun MainScreen(
         ) {
             Text (
                 text = "Pocket Library",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.displayLarge,
+                color = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -42,7 +43,8 @@ fun MainScreen(
         ) {
             Text(
                 text = "Your small pocket library",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
