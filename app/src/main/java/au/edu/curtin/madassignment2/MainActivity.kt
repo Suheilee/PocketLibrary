@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,7 +26,8 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        NavigationScreen()
+                        val viewModel: BookViewModel = viewModel()
+                        NavigationScreen(viewModel = viewModel)
                     }
                 }
             }

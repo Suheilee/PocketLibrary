@@ -1,4 +1,4 @@
-package au.edu.curtin.madassignment2.ui.theme
+package au.edu.curtin.madassignment2
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun ThemeShowcase() {
@@ -39,7 +40,7 @@ fun ThemeShowcase() {
             color = MaterialTheme.colorScheme.secondary
         )
 
-        Divider(color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
         // Headline styles
         Text(
@@ -60,7 +61,7 @@ fun ThemeShowcase() {
             color = MaterialTheme.colorScheme.tertiary
         )
 
-        Divider(color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
         // Title styles
         Text(
@@ -81,7 +82,7 @@ fun ThemeShowcase() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Divider(color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
         // Body styles
         Text(
@@ -102,7 +103,7 @@ fun ThemeShowcase() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Divider(color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
         // Interactive elements with labels
         Row(

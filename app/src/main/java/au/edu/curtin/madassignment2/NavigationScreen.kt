@@ -1,17 +1,16 @@
 package au.edu.curtin.madassignment2
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
-fun NavigationScreen() {
+fun NavigationScreen(
+    viewModel: BookViewModel = viewModel()
+) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
-    var selectedBook by remember { mutableStateOf<Book?>(null) }
+    var selectedBook by remember { mutableStateOf<BookEntity?>(null) }
 
     when (currentScreen) {
         is Screen.Main -> {
@@ -19,7 +18,8 @@ fun NavigationScreen() {
                 onBookClick = { book ->
                     selectedBook = book
                     currentScreen = Screen.BookDetail
-                }
+                },
+                viewModel = viewModel
             )
         }
         is Screen.BookDetail -> {
@@ -31,9 +31,12 @@ fun NavigationScreen() {
                     },
                     onShareClick = {
                         // Handle share functionality
+                        // Could implement sharing the book details
                     },
-                    onFavoriteToggle = { isFavorite ->
-                        // Handle favorite toggle
+                    onFavoriteToggle = { isbn ->
+                        viewModel.toggleFavorite(isbn)
+                        // Update the selectedBook to reflect the change
+                        selectedBook = selectedBook?.copy(isFavorite = !book.isFavorite)
                     }
                 )
             }

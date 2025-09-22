@@ -5,17 +5,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
@@ -25,14 +20,18 @@ fun SearchBar(
     onSearch: (String) -> Unit = {}
 ) {
     var query by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     OutlinedTextField(
         value = query,
-        onValueChange = { query = it },
+        onValueChange = {
+            query = it
+            onSearch(it) // Real-time search
+        },
         placeholder = {
             Text(
-                text = "Search books...",
-                color = MaterialTheme.colorScheme.primary
+                text = "Search books by title or author...",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         singleLine = true,
@@ -44,12 +43,33 @@ fun SearchBar(
                 tint = MaterialTheme.colorScheme.primary
             )
         },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(
+                    onClick = {
+                        query = ""
+                        onSearch("")
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
         shape = RoundedCornerShape(50),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+        ),
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Search
         ),
         keyboardActions = KeyboardActions(
             onSearch = {
+                keyboardController?.hide()
                 onSearch(query)
             }
         )

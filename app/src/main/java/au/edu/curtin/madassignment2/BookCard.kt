@@ -2,18 +2,11 @@ package au.edu.curtin.madassignment2
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,14 +18,15 @@ import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun BookCard(
-    book: Book,
-    onClick: () -> Unit = {}
+    book: BookEntity,
+    onBookClick: (BookEntity) -> Unit = {},
+    onFavoriteClick: (String) -> Unit = {}
 ) {
-    Card (
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp)
-            .clickable { onClick() },
+            .clickable { onBookClick(book) },
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
@@ -99,13 +93,30 @@ fun BookCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Description preview
-                Text(
-                    text = book.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // Description preview and favorite button
+                Row(
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = book.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    IconButton(
+                        onClick = { onFavoriteClick(book.isbn) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (book.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (book.isFavorite) "Remove from favorites" else "Add to favorites",
+                            tint = if (book.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -116,14 +127,15 @@ fun BookCard(
 fun BookCardPreview() {
     PocketLibraryTheme {
         BookCard(
-            book = Book(
+            book = BookEntity(
                 isbn = "9780439139601",
                 title = "Harry Potter and the Philosopher's Stone",
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
                 coverImageRes = R.drawable.harry_potter_1,
-                description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry."
+                description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry.",
+                isFavorite = true
             )
         )
     }

@@ -1,16 +1,7 @@
 package au.edu.curtin.madassignment2
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,17 +9,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -40,13 +22,11 @@ import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun BookDetailScreen(
-    book: Book,
+    book: BookEntity,
     onBackClick: () -> Unit = {},
     onShareClick: () -> Unit = {},
-    onFavoriteToggle: (Boolean) -> Unit = {}
+    onFavoriteToggle: (String) -> Unit = {}
 ) {
-    var isFavorite by remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -77,15 +57,12 @@ fun BookDetailScreen(
                 }
 
                 IconButton(
-                    onClick = {
-                        isFavorite = !isFavorite
-                        onFavoriteToggle(isFavorite)
-                    }
+                    onClick = { onFavoriteToggle(book.isbn) }
                 ) {
                     Icon(
-                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        imageVector = if (book.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (book.isFavorite) "Remove from favorites" else "Add to favorites",
+                        tint = if (book.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -144,6 +121,23 @@ fun BookDetailScreen(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Favorite status badge
+                    if (book.isFavorite) {
+                        Surface(
+                            shape = MaterialTheme.shapes.small,
+                            color = MaterialTheme.colorScheme.errorContainer
+                        ) {
+                            Text(
+                                text = "♥ Favorite",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -231,14 +225,15 @@ fun BookDetailScreen(
 fun BookDetailScreenPreview() {
     PocketLibraryTheme {
         BookDetailScreen(
-            book = Book(
+            book = BookEntity(
                 isbn = "9780439139601",
                 title = "Harry Potter and the Philosopher's Stone",
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
                 coverImageRes = R.drawable.harry_potter_1,
-                description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry. A tale of friendship, bravery, and the battle between good and evil."
+                description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry. A tale of friendship, bravery, and the battle between good and evil.",
+                isFavorite = true
             )
         )
     }
