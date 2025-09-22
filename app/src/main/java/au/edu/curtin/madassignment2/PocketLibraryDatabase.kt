@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [BookEntity::class],
-    version = 1,
+    version = 2, // bumped from 1 -> 2 to avoid schema mismatch crash
     exportSchema = false
 )
 abstract class PocketLibraryDatabase : RoomDatabase() {
@@ -24,7 +24,10 @@ abstract class PocketLibraryDatabase : RoomDatabase() {
                     context.applicationContext,
                     PocketLibraryDatabase::class.java,
                     "pocket_library_database"
-                ).build()
+                )
+                    // If schema changes during development, wipe & rebuild DB to prevent startup crash
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

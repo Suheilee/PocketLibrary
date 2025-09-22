@@ -13,14 +13,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun SearchBar(
+    searchQuery: String = "",
     onSearch: (String) -> Unit = {}
 ) {
-    var query by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf(searchQuery) }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // Update local state when external state changes
+    LaunchedEffect(searchQuery) {
+        query = searchQuery
+    }
 
     OutlinedTextField(
         value = query,
@@ -59,7 +66,7 @@ fun SearchBar(
                 }
             }
         },
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(50.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline

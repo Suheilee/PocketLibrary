@@ -1,14 +1,23 @@
 package au.edu.curtin.madassignment2
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
 fun NavigationScreen(
-    viewModel: BookViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // Single shared state manager instance
+    val stateManager = remember {
+        BookStateManager(context, coroutineScope)
+    }
+
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
     var selectedBook by remember { mutableStateOf<BookEntity?>(null) }
 
@@ -19,23 +28,18 @@ fun NavigationScreen(
                     selectedBook = book
                     currentScreen = Screen.BookDetail
                 },
-                viewModel = viewModel
+                stateManager = stateManager
             )
         }
         is Screen.BookDetail -> {
             selectedBook?.let { book ->
                 BookDetailScreen(
                     book = book,
-                    onBackClick = {
-                        currentScreen = Screen.Main
-                    },
-                    onShareClick = {
-                        // Handle share functionality
-                        // Could implement sharing the book details
-                    },
-                    onFavoriteToggle = { isbn ->
-                        viewModel.toggleFavorite(isbn)
-                        // Update the selectedBook to reflect the change
+                    onBackClick = { currentScreen = Screen.Main },
+                    onShareClick = { /* TODO share */ },
+                    onFavoriteToggle = { bookId ->
+                        stateManager.toggleFavorite(bookId)
+                        // Reflect the change on the local selected book
                         selectedBook = selectedBook?.copy(isFavorite = !book.isFavorite)
                     }
                 )

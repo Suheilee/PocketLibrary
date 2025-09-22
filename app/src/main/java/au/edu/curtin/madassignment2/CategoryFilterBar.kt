@@ -2,6 +2,7 @@ package au.edu.curtin.madassignment2
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
@@ -78,8 +79,7 @@ fun CategoryFilterBar(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(categories.size) { index ->
-                val category = categories[index]
+            items(categories) { category ->
                 FilterChip(
                     onClick = { onCategorySelected(category) },
                     label = {

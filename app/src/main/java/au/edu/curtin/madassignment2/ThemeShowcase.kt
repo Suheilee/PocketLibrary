@@ -6,7 +6,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
@@ -21,165 +24,199 @@ fun ThemeShowcase() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Display styles
         Text(
-            text = "Pocket Library",
+            text = "Pocket Library Theme Showcase",
             style = MaterialTheme.typography.displayLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            text = "Ancient Wisdom Collection",
-            style = MaterialTheme.typography.displayMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Text(
-            text = "Timeless Tales",
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
         )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
-        // Headline styles
-        Text(
-            text = "Featured Collections",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
+        // Typography showcase
+        TypographyShowcase()
 
-        Text(
-            text = "Philosophy & Literature",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
+        // Color scheme showcase
+        ColorSchemeShowcase()
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+
+        // Component showcase
+        ComponentShowcase()
+    }
+}
+
+@Composable
+private fun TypographyShowcase() {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = "Recent Additions",
+            text = "Typography",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.tertiary
-        )
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-
-        // Title styles
-        Text(
-            text = "Book Title: The Art of Reading",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = "Author: Jane Scholar",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = "Display Large",
+            style = MaterialTheme.typography.displayLarge
         )
 
         Text(
-            text = "Published: 2024",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-
-        // Body styles
-        Text(
-            text = "In the quiet corners of ancient libraries, where dust motes dance in shafts of golden sunlight, knowledge awaits those who seek it. This collection brings together the finest literary works from across the centuries.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground
+            text = "Headline Small",
+            style = MaterialTheme.typography.headlineSmall
         )
 
         Text(
-            text = "Each volume has been carefully selected for its enduring wisdom and timeless appeal. From classical philosophy to modern poetry, discover the treasures that have shaped human thought.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground
+            text = "Title Large",
+            style = MaterialTheme.typography.titleLarge
         )
 
         Text(
-            text = "Available in both digital and print formats.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            text = "Title Medium",
+            style = MaterialTheme.typography.titleMedium
         )
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+        Text(
+            text = "Body Large - This is a longer text to showcase body typography",
+            style = MaterialTheme.typography.bodyLarge
+        )
 
-        // Interactive elements with labels
+        Text(
+            text = "Body Medium - Regular text content for descriptions",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Text(
+            text = "Body Small - Smaller text for captions",
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        Text(
+            text = "Label Large",
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+}
+
+@Composable
+private fun ColorSchemeShowcase() {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Color Scheme",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
+        )
+
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text(
-                    text = "Borrow Book",
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-
-            OutlinedButton(onClick = { }) {
-                Text(
-                    text = "Preview",
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-
-            TextButton(onClick = { }) {
-                Text(
-                    text = "Details",
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
+            ColorBox("Primary", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary)
+            ColorBox("Secondary", MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.onSecondary)
+            ColorBox("Tertiary", MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.onTertiary)
         }
 
-        // Cards showing surface colors
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = "Reading Progress",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = 0.65f,
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "65% complete",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ColorBox("Error", MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)
+            ColorBox("Surface", MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurface)
+            ColorBox("Background", MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.onBackground)
         }
     }
 }
 
-@Preview(name = "Light Theme")
 @Composable
-fun ThemeShowcasePreviewLight() {
+private fun RowScope.ColorBox(name: String, backgroundColor: Color, textColor: Color) {
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = name,
+            color = textColor,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun ComponentShowcase() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            text = "Components",
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
+        )
+
+        // Buttons
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = {}) {
+                Text("Primary Button")
+            }
+            OutlinedButton(onClick = {}) {
+                Text("Outlined Button")
+            }
+            TextButton(onClick = {}) {
+                Text("Text Button")
+            }
+        }
+
+        // Cards
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Card Title",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "This is a sample card showcasing the theme colors and typography.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+
+        // Filter chips
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                onClick = {},
+                label = { Text("Selected") },
+                selected = true
+            )
+            FilterChip(
+                onClick = {},
+                label = { Text("Unselected") },
+                selected = false
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ThemeShowcasePreview() {
     PocketLibraryTheme(darkTheme = false) {
         ThemeShowcase()
     }
 }
 
-@Preview(name = "Dark Theme")
+@Preview(showBackground = true)
 @Composable
-fun ThemeShowcasePreveDark() {
+fun ThemeShowcaseDarkPreview() {
     PocketLibraryTheme(darkTheme = true) {
         ThemeShowcase()
     }
