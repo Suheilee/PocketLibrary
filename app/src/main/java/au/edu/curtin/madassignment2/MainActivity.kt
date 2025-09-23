@@ -19,9 +19,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    NavigationScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    MainScreen()
                 }
             }
         }

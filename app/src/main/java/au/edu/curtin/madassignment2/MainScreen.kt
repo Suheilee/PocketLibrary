@@ -12,9 +12,7 @@ import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 @Composable
-fun MainScreen(
-    onBookClick: (BookEntity) -> Unit = {}
-) {
+fun MainScreen() {
     // Sample data for UI only
     val sampleBooks = remember {
         listOf(
@@ -44,18 +42,44 @@ fun MainScreen(
                 category = "Romance",
                 coverImageRes = android.R.drawable.ic_menu_gallery,
                 isFavorite = false
+            ),
+            BookEntity(
+                id = "4",
+                title = "The Great Gatsby",
+                author = "F. Scott Fitzgerald",
+                year = 1925,
+                category = "Classic",
+                coverImageRes = android.R.drawable.ic_menu_gallery,
+                isFavorite = true
+            ),
+            BookEntity(
+                id = "5",
+                title = "To Kill a Mockingbird",
+                author = "Harper Lee",
+                year = 1960,
+                category = "Classic",
+                coverImageRes = android.R.drawable.ic_menu_gallery,
+                isFavorite = false
             )
         )
     }
 
-    val categories = remember { listOf("All", "Fantasy", "Romance", "Mystery") }
+    val categories = remember { listOf("All", "Fantasy", "Romance", "Classic", "Mystery") }
     var selectedCategory by remember { mutableStateOf("All") }
     var showFavoritesOnly by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+    var favorites by remember { mutableStateOf(sampleBooks.map { it.id to it.isFavorite }.toMap()) }
+
+    // Update books with current favorite status
+    val booksWithFavorites = remember(sampleBooks, favorites) {
+        sampleBooks.map { book ->
+            book.copy(isFavorite = favorites[book.id] ?: book.isFavorite)
+        }
+    }
 
     // Filter books based on current selections
-    val filteredBooks = remember(sampleBooks, selectedCategory, showFavoritesOnly, searchQuery) {
-        sampleBooks.filter { book ->
+    val filteredBooks = remember(booksWithFavorites, selectedCategory, showFavoritesOnly, searchQuery) {
+        booksWithFavorites.filter { book ->
             val matchesSearch = if (searchQuery.isBlank()) true
             else book.title.contains(searchQuery, ignoreCase = true) ||
                     book.author.contains(searchQuery, ignoreCase = true)
@@ -160,8 +184,12 @@ fun MainScreen(
                     items(filteredBooks) { book ->
                         BookCard(
                             book = book,
-                            onBookClick = onBookClick,
-                            onFavoriteClick = { /* Handle favorite toggle in UI only version */ }
+                            onBookClick = { /* No navigation - just UI */ },
+                            onFavoriteClick = { bookId ->
+                                favorites = favorites.toMutableMap().apply {
+                                    this[bookId] = !(this[bookId] ?: false)
+                                }
+                            }
                         )
                     }
                 }
