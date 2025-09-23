@@ -85,21 +85,16 @@ fun BookCard(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = book.category,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(verticalAlignment = Alignment.Bottom) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = if (book.description.isNotEmpty()) book.description else "No description available",
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 3,
+                        text = book.category,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
@@ -125,13 +120,11 @@ fun BookCardPreview() {
         BookCard(
             book = BookEntity(
                 id = "1",
-                isbn = "9780439139601",
                 title = "Harry Potter and the Philosopher's Stone",
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
                 coverImageRes = android.R.drawable.ic_menu_gallery,
-                description = "The first book in the magical Harry Potter series...",
                 isFavorite = true
             )
         )

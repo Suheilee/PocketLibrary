@@ -20,35 +20,29 @@ fun MainScreen(
         listOf(
             BookEntity(
                 id = "1",
-                isbn = "9780439139601",
                 title = "Harry Potter and the Philosopher's Stone",
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
                 coverImageRes = android.R.drawable.ic_menu_gallery,
-                description = "The first book in the magical Harry Potter series follows young Harry as he discovers he's a wizard and begins his journey at Hogwarts School of Witchcraft and Wizardry.",
                 isFavorite = true
             ),
             BookEntity(
                 id = "2",
-                isbn = "9780439064873",
                 title = "Harry Potter and the Chamber of Secrets",
                 author = "J.K. Rowling",
                 year = 1998,
                 category = "Fantasy",
                 coverImageRes = android.R.drawable.ic_menu_gallery,
-                description = "Harry's second year at Hogwarts brings new challenges...",
                 isFavorite = false
             ),
             BookEntity(
                 id = "3",
-                isbn = "9780141439518",
                 title = "Pride and Prejudice",
                 author = "Jane Austen",
                 year = 1813,
                 category = "Romance",
                 coverImageRes = android.R.drawable.ic_menu_gallery,
-                description = "A romantic novel of manners written by Jane Austen.",
                 isFavorite = false
             )
         )

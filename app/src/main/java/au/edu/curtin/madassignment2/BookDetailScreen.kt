@@ -155,46 +155,6 @@ fun BookDetailScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            if (book.isbn.isNotEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "ISBN",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(text = book.isbn, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(2.dp)) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Description",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = if (book.description.isNotEmpty()) book.description else "No description available",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Justify,
-                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight.times(1.5f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -206,13 +166,11 @@ fun BookDetailScreenPreview() {
         BookDetailScreen(
             book = BookEntity(
                 id = "1",
-                isbn = "9780439139601",
                 title = "Harry Potter and the Philosopher's Stone",
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
                 coverImageRes = android.R.drawable.ic_menu_gallery,
-                description = "The first book in the magical Harry Potter series...",
                 isFavorite = true
             )
         )
