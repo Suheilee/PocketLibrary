@@ -16,7 +16,15 @@ import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 @Composable
 fun MainScreen(vm: BooksViewModel = viewModel()) {
     val state by vm.state.collectAsState()
-    val categories = listOf("All", "Fantasy", "Romance", "Classic", "Mystery")
+
+    // Use predefined categories or dynamic categories based on available books
+    val categories = if (state.allBooks.isEmpty()) {
+        listOf("All", "Fantasy", "Romance", "Classic", "Mystery", "General")
+    } else {
+        state.availableCategories.ifEmpty {
+            listOf("All", "Fantasy", "Romance", "Classic", "Mystery", "General")
+        }
+    }
 
     Scaffold { innerPadding ->
         Column(
@@ -62,9 +70,17 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                         ) {
                             Text(
                                 text = if (state.showFavoritesOnly) {
-                                    "No favorite books yet"
+                                    if (state.selectedCategory != "All") {
+                                        "No favorite ${state.selectedCategory} books yet"
+                                    } else {
+                                        "No favorite books yet"
+                                    }
                                 } else {
-                                    "Your favorite books will appear here"
+                                    if (state.selectedCategory != "All") {
+                                        "No ${state.selectedCategory} books in your favorites"
+                                    } else {
+                                        "Your favorite books will appear here"
+                                    }
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -84,7 +100,11 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No books found",
+                            text = if (state.selectedCategory != "All") {
+                                "No ${state.selectedCategory} books found for \"${state.searchQuery}\""
+                            } else {
+                                "No books found for \"${state.searchQuery}\""
+                            },
                             style = MaterialTheme.typography.titleMedium
                         )
                     }

@@ -11,12 +11,24 @@ data class BooksUiState(
         get() = allBooks
             .map { b -> if (favorites.contains(b.id)) b.copy(isFavorite = true) else b }
             .filter { book ->
+                // Filter by category (works for both search results and database favorites)
                 val matchesCategory =
                     selectedCategory == "All" || book.category == selectedCategory
 
+                // Filter by favorites if toggle is on
                 val matchesFav =
                     if (showFavoritesOnly) book.isFavorite else true
 
                 matchesCategory && matchesFav
             }
+
+    // Get available categories from current books
+    val availableCategories: List<String>
+        get() {
+            val categories = allBooks
+                .map { it.category }
+                .distinct()
+                .sorted()
+            return listOf("All") + categories
+        }
 }

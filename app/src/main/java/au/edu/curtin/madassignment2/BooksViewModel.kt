@@ -97,28 +97,41 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                     titleLower.contains("lord of the rings") ||
                     titleLower.contains("hobbit") ||
                     titleLower.contains("narnia") ||
+                    titleLower.contains("fantasy") ||
+                    titleLower.contains("dragon") ||
+                    titleLower.contains("wizard") ||
+                    titleLower.contains("magic") ||
                     authorLower.contains("tolkien") ||
-                    authorLower.contains("rowling") -> "Fantasy"
+                    authorLower.contains("rowling") ||
+                    authorLower.contains("sanderson") -> "Fantasy"
 
             titleLower.contains("pride and prejudice") ||
                     titleLower.contains("outlander") ||
+                    titleLower.contains("romance") ||
+                    titleLower.contains("love") ||
                     authorLower.contains("austen") ||
-                    authorLower.contains("romance") -> "Romance"
+                    authorLower.contains("sparks") -> "Romance"
 
             titleLower.contains("sherlock") ||
                     titleLower.contains("murder") ||
                     titleLower.contains("detective") ||
                     titleLower.contains("mystery") ||
+                    titleLower.contains("crime") ||
                     authorLower.contains("christie") ||
-                    authorLower.contains("doyle") -> "Mystery"
+                    authorLower.contains("doyle") ||
+                    authorLower.contains("conan doyle") -> "Mystery"
 
             titleLower.contains("1984") ||
                     titleLower.contains("gatsby") ||
                     titleLower.contains("mockingbird") ||
                     titleLower.contains("catcher") ||
+                    titleLower.contains("moby dick") ||
+                    titleLower.contains("jane eyre") ||
                     authorLower.contains("orwell") ||
                     authorLower.contains("fitzgerald") ||
-                    authorLower.contains("steinbeck") -> "Classic"
+                    authorLower.contains("steinbeck") ||
+                    authorLower.contains("dickens") ||
+                    authorLower.contains("hemingway") -> "Classic"
 
             else -> "General"
         }
@@ -128,12 +141,25 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 println("🔍 Searching for: $query")
-                val response = api.searchBooks(query)
+
+                // Get the current selected category
+                val currentCategory = _state.value.selectedCategory
+
+                // Modify the search query to include category filter if not "All"
+                val searchQuery = if (currentCategory != "All") {
+                    "$query subject:${currentCategory.lowercase()}"
+                } else {
+                    query
+                }
+
+                val response = api.searchBooks(searchQuery)
                 println("📡 API Response: ${response.docs.size} docs")
 
                 val books = response.docs.mapNotNull { book ->
                     if (book.key != null && book.title != null) {
                         val author = book.author_name?.joinToString(", ") ?: "Unknown Author"
+                        val category = categorizeBook(book.title, author)
+
                         BookEntity(
                             id = book.key,
                             title = book.title,
@@ -142,10 +168,11 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                             coverImageUrl = book.cover_i?.let {
                                 "https://covers.openlibrary.org/b/id/$it-M.jpg"
                             },
-                            category = categorizeBook(book.title, author)
+                            category = category
                         )
                     } else null
                 }
+
                 _state.update {
                     it.copy(allBooks = books)
                 }
@@ -156,8 +183,15 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun onCategorySelected(category: String) =
+    fun onCategorySelected(category: String) {
         _state.update { it.copy(selectedCategory = category) }
+
+        // If there's an active search, re-fetch with the new category filter
+        val currentQuery = _state.value.searchQuery
+        if (currentQuery.isNotBlank()) {
+            fetchBooksFromApi(currentQuery)
+        }
+    }
 
     fun toggleFavoritesOnly() =
         _state.update { it.copy(showFavoritesOnly = !it.showFavoritesOnly) }
@@ -182,13 +216,13 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 val currentBook = currentState.allBooks.find { it.id == bookId }
 
                 if (currentBook != null) {
-                    // Add to database
+                    // Add to database with the properly categorized category
                     val favoriteBook = FavoriteBookEntity(
                         id = currentBook.id,
                         title = currentBook.title,
                         author = currentBook.author,
                         year = currentBook.year,
-                        category = currentBook.category,
+                        category = currentBook.category, // Now saves the specific category
                         coverImageUrl = currentBook.coverImageUrl
                     )
                     repository.insertFavorite(favoriteBook)
