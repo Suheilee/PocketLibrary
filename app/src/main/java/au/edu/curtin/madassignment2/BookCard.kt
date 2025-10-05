@@ -104,7 +104,7 @@ fun BookCardPreview() {
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
-                coverImageRes = android.R.drawable.ic_menu_gallery,
+                coverImageRes = R.drawable.harry_potter_1,
                 isFavorite = true
             )
         )
