@@ -35,7 +35,7 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
 
             SearchBar(
                 searchQuery = state.searchQuery,
-                onSearch = vm::onSearch
+                onSearch = vm::onSearchQueryChange
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -51,19 +51,34 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(16.dp))
 
             when {
-                state.searchQuery.isEmpty() -> {
+                state.filteredBooks.isEmpty() && state.searchQuery.isEmpty() -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Search for books to get started",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (state.showFavoritesOnly) {
+                                    "No favorite books yet"
+                                } else {
+                                    "Your favorite books will appear here"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Search for books to add to your favorites",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
-                state.filteredBooks.isEmpty() -> {
+                state.filteredBooks.isEmpty() && state.searchQuery.isNotEmpty() -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -84,7 +99,6 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                         items(state.filteredBooks) { book ->
                             BookCard(
                                 book = book,
-                                onBookClick = { /* TODO: details screen */ },
                                 onFavoriteClick = vm::toggleFavorite
                             )
                         }

@@ -2,7 +2,6 @@ package au.edu.curtin.madassignment2
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -10,7 +9,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -21,17 +19,9 @@ fun SearchBar(
     searchQuery: String = "",
     onSearch: (String) -> Unit = {}
 ) {
-    var query by remember { mutableStateOf(searchQuery) }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    // Keep query synced
-    LaunchedEffect(searchQuery) {
-        query = searchQuery
-    }
-
     OutlinedTextField(
-        value = query,
-        onValueChange = { query = it }, // no auto search on each letter
+        value = searchQuery,
+        onValueChange = onSearch,
         placeholder = {
             Text(
                 text = "Search books by title or author...",
@@ -48,10 +38,9 @@ fun SearchBar(
             )
         },
         trailingIcon = {
-            if (query.isNotEmpty()) {
+            if (searchQuery.isNotEmpty()) {
                 IconButton(
                     onClick = {
-                        query = ""
                         onSearch("")
                     }
                 ) {
@@ -70,12 +59,6 @@ fun SearchBar(
         ),
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Search
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                keyboardController?.hide()
-                onSearch(query)
-            }
         )
     )
 }

@@ -17,7 +17,6 @@ data class BooksUiState(
                 val matchesFav =
                     if (showFavoritesOnly) book.isFavorite else true
 
-                // Do NOT re-filter by title/author here — API already handles it
                 matchesCategory && matchesFav
             }
 }

@@ -1,7 +1,6 @@
 package au.edu.curtin.madassignment2
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -21,14 +20,12 @@ import coil.compose.AsyncImage
 @Composable
 fun BookCard(
     book: BookEntity,
-    onBookClick: (BookEntity) -> Unit = {},
     onFavoriteClick: (String) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp)
-            .clickable { onBookClick(book) },
+            .padding(5.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
