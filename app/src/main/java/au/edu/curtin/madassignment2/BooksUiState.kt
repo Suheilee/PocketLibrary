@@ -8,20 +8,16 @@ data class BooksUiState(
     val favorites: Set<String> = emptySet()
 ) {
     val filteredBooks: List<BookEntity>
-    get() = allBooks
-        .map { b -> if (favorites.contains(b.id)) b.copy(isFavorite = true) else b }
-        .filter { book ->
-            val matchesSearch =
-                searchQuery.isBlank() ||
-                        book.title.contains(searchQuery, ignoreCase = true) ||
-                        book.author.contains(searchQuery, ignoreCase = true)
+        get() = allBooks
+            .map { b -> if (favorites.contains(b.id)) b.copy(isFavorite = true) else b }
+            .filter { book ->
+                val matchesCategory =
+                    selectedCategory == "All" || book.category == selectedCategory
 
-            val matchesCategory =
-                selectedCategory == "All" || book.category == selectedCategory
+                val matchesFav =
+                    if (showFavoritesOnly) book.isFavorite else true
 
-            val matchesFav =
-                if (showFavoritesOnly) book.isFavorite else true
-
-            matchesSearch && matchesCategory && matchesFav
-        }
+                // Do NOT re-filter by title/author here — API already handles it
+                matchesCategory && matchesFav
+            }
 }

@@ -60,5 +60,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.9.1")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.9.2")
+
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }

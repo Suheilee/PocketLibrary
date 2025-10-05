@@ -24,17 +24,14 @@ fun SearchBar(
     var query by remember { mutableStateOf(searchQuery) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // Update local state when external state changes
+    // Keep query synced
     LaunchedEffect(searchQuery) {
         query = searchQuery
     }
 
     OutlinedTextField(
         value = query,
-        onValueChange = {
-            query = it
-            onSearch(it) // Real-time search
-        },
+        onValueChange = { query = it }, // no auto search on each letter
         placeholder = {
             Text(
                 text = "Search books by title or author...",
@@ -86,7 +83,5 @@ fun SearchBar(
 @Preview(showBackground = true)
 @Composable
 fun SearchBarPreview() {
-    PocketLibraryTheme {
-        SearchBar()
-    }
+    PocketLibraryTheme { SearchBar() }
 }

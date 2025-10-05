@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
+import coil.compose.AsyncImage
 
 @Composable
 fun BookCard(
@@ -37,14 +38,25 @@ fun BookCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Book cover
-            Image(
-                painter = painterResource(id = book.coverImageRes ?: android.R.drawable.ic_menu_gallery),
-                contentDescription = "Book cover for ${book.title}",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp),
-                contentScale = ContentScale.Crop
-            )
+            if (book.coverImageUrl != null) {
+                AsyncImage(
+                    model = book.coverImageUrl,
+                    contentDescription = "Book cover for ${book.title}",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                    contentDescription = "Default cover",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
