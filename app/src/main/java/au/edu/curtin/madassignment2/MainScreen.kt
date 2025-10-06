@@ -31,37 +31,33 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
         ) {
-            Text(
-                text = "Pocket Library",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+            // Search Bar
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                SearchBar(
+                    searchQuery = state.searchQuery,
+                    onSearch = vm::onSearchQueryChange
+                )
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SearchBar(
-                searchQuery = state.searchQuery,
-                onSearch = vm::onSearchQueryChange
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+            // Category Filter
             CategoryFilterBar(
                 categories = categories,
                 selectedCategory = state.selectedCategory,
-                showFavoritesOnly = state.showFavoritesOnly,
-                onCategorySelected = vm::onCategorySelected,
-                onFavoritesToggle = vm::toggleFavoritesOnly
+                onCategorySelected = vm::onCategorySelected
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Content Area
             when {
                 state.filteredBooks.isEmpty() && state.searchQuery.isEmpty() -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -69,25 +65,17 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = if (state.showFavoritesOnly) {
-                                    if (state.selectedCategory != "All") {
-                                        "No favorite ${state.selectedCategory} books yet"
-                                    } else {
-                                        "No favorite books yet"
-                                    }
+                                text = if (state.selectedCategory != "All") {
+                                    "No ${state.selectedCategory} books saved"
                                 } else {
-                                    if (state.selectedCategory != "All") {
-                                        "No ${state.selectedCategory} books in your favorites"
-                                    } else {
-                                        "Your favorite books will appear here"
-                                    }
+                                    "No books saved yet"
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Search for books to add to your favorites",
+                                text = "Search for books to add them to your library",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -96,22 +84,37 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                 }
                 state.filteredBooks.isEmpty() && state.searchQuery.isNotEmpty() -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = if (state.selectedCategory != "All") {
-                                "No ${state.selectedCategory} books found for \"${state.searchQuery}\""
-                            } else {
-                                "No books found for \"${state.searchQuery}\""
-                            },
-                            style = MaterialTheme.typography.titleMedium
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (state.selectedCategory != "All") {
+                                    "No ${state.selectedCategory} books found"
+                                } else {
+                                    "No books found"
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "for \"${state.searchQuery}\"",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
                 else -> {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxSize()
