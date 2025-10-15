@@ -17,12 +17,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 import coil.compose.AsyncImage
+import java.io.File
 
 @Composable
 fun BookCard(
     book: BookEntity,
     onFavoriteClick: (String) -> Unit = {},
-    onShareClick: (BookEntity) -> Unit = {}
+    onShareClick: (BookEntity) -> Unit = {},
+    onCameraClick: (String) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -36,25 +38,38 @@ fun BookCard(
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Book cover
-            if (book.coverImageUrl != null) {
-                AsyncImage(
-                    model = book.coverImageUrl,
-                    contentDescription = "Book cover for ${book.title}",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = android.R.drawable.ic_menu_gallery),
-                    contentDescription = "Default cover",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentScale = ContentScale.Crop
-                )
+            // Book cover - prioritize local photo over URL
+            when {
+                book.localCoverPhotoPath != null && File(book.localCoverPhotoPath).exists() -> {
+                    AsyncImage(
+                        model = File(book.localCoverPhotoPath),
+                        contentDescription = "Personal cover for ${book.title}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                book.coverImageUrl != null -> {
+                    AsyncImage(
+                        model = book.coverImageUrl,
+                        contentDescription = "Book cover for ${book.title}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                else -> {
+                    Image(
+                        painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                        contentDescription = "Default cover",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -97,6 +112,20 @@ fun BookCard(
                     )
                 }
 
+                // Camera button - only show for favorites
+                if (book.isFavorite) {
+                    IconButton(onClick = { onCameraClick(book.id) }) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_menu_camera),
+                            contentDescription = "Take cover photo",
+                            tint = if (book.localCoverPhotoPath != null)
+                                MaterialTheme.colorScheme.tertiary
+                            else
+                                MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
                 IconButton(onClick = { onShareClick(book) }) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -120,7 +149,6 @@ fun BookCardPreview() {
                 author = "J.K. Rowling",
                 year = 1997,
                 category = "Fantasy",
-                coverImageRes = R.drawable.harry_potter_1,
                 isFavorite = true
             )
         )

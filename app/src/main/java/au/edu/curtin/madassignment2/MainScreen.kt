@@ -1,7 +1,11 @@
 package au.edu.curtin.madassignment2
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,6 +18,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
@@ -24,6 +29,32 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
     val context = LocalContext.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    // Camera permission state
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Camera permission launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCameraPermission = isGranted
+    }
+
+    // Camera launcher - handles photo capture
+    var selectedBookIdForPhoto by remember { mutableStateOf<String?>(null) }
+    val launchCamera = rememberCameraLauncher { photoPath ->
+        selectedBookIdForPhoto?.let { bookId ->
+            vm.updateBookCoverPhoto(bookId, photoPath)
+        }
+        selectedBookIdForPhoto = null
+    }
+
     // Adjust grid columns based on orientation
     val gridColumns = if (isLandscape) 3 else 2
 
@@ -33,6 +64,16 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
     } else {
         state.availableCategories.ifEmpty {
             listOf("All", "Fantasy", "Romance", "Classic", "Mystery", "General")
+        }
+    }
+
+    // Handle camera click - request permission if needed, then launch camera
+    val onCameraClick: (String) -> Unit = { bookId ->
+        selectedBookIdForPhoto = bookId
+        if (hasCameraPermission) {
+            launchCamera()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -120,7 +161,8 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                         state = state,
                         gridColumns = gridColumns,
                         onToggleFavorite = vm::toggleFavorite,
-                        onShareBook = shareBook
+                        onShareBook = shareBook,
+                        onCameraClick = onCameraClick
                     )
                 }
             }
@@ -155,7 +197,8 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                     state = state,
                     gridColumns = gridColumns,
                     onToggleFavorite = vm::toggleFavorite,
-                    onShareBook = shareBook
+                    onShareBook = shareBook,
+                    onCameraClick = onCameraClick
                 )
             }
         }
@@ -167,7 +210,8 @@ fun BookGridContent(
     state: BooksUiState,
     gridColumns: Int,
     onToggleFavorite: (String) -> Unit,
-    onShareBook: (BookEntity) -> Unit
+    onShareBook: (BookEntity) -> Unit,
+    onCameraClick: (String) -> Unit
 ) {
     when {
         state.filteredBooks.isEmpty() && state.searchQuery.isEmpty() -> {
@@ -240,7 +284,8 @@ fun BookGridContent(
                     BookCard(
                         book = book,
                         onFavoriteClick = onToggleFavorite,
-                        onShareClick = onShareBook
+                        onShareClick = onShareBook,
+                        onCameraClick = onCameraClick
                     )
                 }
             }

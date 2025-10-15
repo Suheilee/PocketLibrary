@@ -22,4 +22,7 @@ interface FavoriteBookDao {
 
     @Query("SELECT id FROM favorite_books")
     fun getAllFavoriteIds(): Flow<List<String>>
+
+    @Query("UPDATE favorite_books SET localCoverPhotoPath = :photoPath WHERE id = :bookId")
+    suspend fun updateCoverPhoto(bookId: String, photoPath: String)
 }

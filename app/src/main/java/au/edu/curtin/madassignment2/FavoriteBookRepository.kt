@@ -19,4 +19,12 @@ class FavoriteBookRepository(private val dao: FavoriteBookDao) {
     suspend fun isFavorite(id: String): Boolean {
         return dao.getFavoriteById(id) != null
     }
+
+    suspend fun updateCoverPhoto(bookId: String, photoPath: String) {
+        dao.updateCoverPhoto(bookId, photoPath)
+    }
+
+    suspend fun getFavoriteById(id: String): FavoriteBookEntity? {
+        return dao.getFavoriteById(id)
+    }
 }

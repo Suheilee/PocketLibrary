@@ -11,7 +11,7 @@ data class BooksUiState(
         get() = allBooks
             .map { b -> if (favorites.contains(b.id)) b.copy(isFavorite = true) else b }
             .filter { book ->
-                // Filter by category (works for both search results and database favorites)
+                // Filter by category that works for both search results and database favorites
                 val matchesCategory =
                     selectedCategory == "All" || book.category == selectedCategory
 

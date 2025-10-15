@@ -8,5 +8,6 @@ data class BookEntity(
     val category: String = "General",
     val coverImageUrl: String? = null,
     val coverImageRes: Int? = null,
+    val localCoverPhotoPath: String? = null,
     val isFavorite: Boolean = false
 )

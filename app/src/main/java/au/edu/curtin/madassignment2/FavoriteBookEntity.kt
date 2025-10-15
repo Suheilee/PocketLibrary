@@ -11,5 +11,6 @@ data class FavoriteBookEntity(
     val author: String,
     val year: Int,
     val category: String,
-    val coverImageUrl: String?
+    val coverImageUrl: String?,
+    val localCoverPhotoPath: String? = null
 )

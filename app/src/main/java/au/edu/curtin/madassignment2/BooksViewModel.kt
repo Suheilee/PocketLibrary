@@ -42,6 +42,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 year = favBook.year,
                 category = favBook.category,
                 coverImageUrl = favBook.coverImageUrl,
+                localCoverPhotoPath = favBook.localCoverPhotoPath,
                 isFavorite = true
             )
         }
@@ -51,7 +52,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
             // No search - show favorites from database
             favoriteBooksAsEntities
         } else {
-            // Active search - show API results with updated favorite status
+            // Active search shows API results with updated favorite status
             state.allBooks
         }
 
@@ -140,12 +141,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     private fun fetchBooksFromApi(query: String) {
         viewModelScope.launch {
             try {
-                println("🔍 Searching for: $query")
-
-                // Get the current selected category
                 val currentCategory = _state.value.selectedCategory
 
-                // Modify the search query to include category filter if not "All"
                 val searchQuery = if (currentCategory != "All") {
                     "$query subject:${currentCategory.lowercase()}"
                 } else {
@@ -153,7 +150,6 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 val response = api.searchBooks(searchQuery)
-                println("📡 API Response: ${response.docs.size} docs")
 
                 val books = response.docs.mapNotNull { book ->
                     if (book.key != null && book.title != null) {
@@ -186,15 +182,14 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     fun onCategorySelected(category: String) {
         _state.update { it.copy(selectedCategory = category) }
 
-        // If there's an active search, re-fetch with the new category filter
         val currentQuery = _state.value.searchQuery
         if (currentQuery.isNotBlank()) {
             fetchBooksFromApi(currentQuery)
         }
     }
 
-    fun toggleFavoritesOnly() =
-        _state.update { it.copy(showFavoritesOnly = !it.showFavoritesOnly) }
+    /*fun toggleFavoritesOnly() =
+        _state.update { it.copy(showFavoritesOnly = !it.showFavoritesOnly) }*/
 
     fun toggleFavorite(bookId: String) {
         viewModelScope.launch {
@@ -222,12 +217,19 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                         title = currentBook.title,
                         author = currentBook.author,
                         year = currentBook.year,
-                        category = currentBook.category, // Now saves the specific category
-                        coverImageUrl = currentBook.coverImageUrl
+                        category = currentBook.category,
+                        coverImageUrl = currentBook.coverImageUrl,
+                        localCoverPhotoPath = null
                     )
                     repository.insertFavorite(favoriteBook)
                 }
             }
+        }
+    }
+
+    fun updateBookCoverPhoto(bookId: String, photoPath: String) {
+        viewModelScope.launch {
+            repository.updateCoverPhoto(bookId, photoPath)
         }
     }
 }
