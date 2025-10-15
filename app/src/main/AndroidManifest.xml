@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
+    <!-- Optional: For better network handling -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:allowBackup="true"
@@ -21,6 +23,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MADAssignment2">
+
+        <!-- Add Firebase Meta Data -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_channel" />
+
+        <!-- Firebase App ID -->
+        <meta-data
+            android:name="com.google.firebase.app_check_token"
+            android:value="@string/firebase_app_check_token" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -28,7 +41,6 @@
             android:theme="@style/Theme.MADAssignment2">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

@@ -9,10 +9,13 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class BooksViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
-    private val repository = FavoriteBookRepository(database.favoriteBookDao())
+    private val firestoreService = FirestoreService()
+    private val repository = FavoriteBookRepository(database.favoriteBookDao(), firestoreService)
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -26,6 +29,11 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     private val api = retrofit.create(OpenLibraryApi::class.java)
 
     private val _state = MutableStateFlow(BooksUiState())
+    private val _isLoading = MutableStateFlow(false)
+    private val _syncStatus = MutableStateFlow("")
+
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val syncStatus: StateFlow<String> = _syncStatus.asStateFlow()
 
     // Combine API books with database favorites
     val state: StateFlow<BooksUiState> = combine(
@@ -53,7 +61,13 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
             favoriteBooksAsEntities
         } else {
             // Active search shows API results with updated favorite status
-            state.allBooks
+            state.allBooks.map { book ->
+                if (favoriteIds.contains(book.id)) {
+                    book.copy(isFavorite = true)
+                } else {
+                    book
+                }
+            }
         }
 
         state.copy(
@@ -77,6 +91,13 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 .collect { query ->
                     fetchBooksFromApi(query)
                 }
+        }
+
+        // Sync with cloud on startup if user is logged in
+        viewModelScope.launch {
+            if (Firebase.auth.currentUser != null) {
+                syncWithCloud()
+            }
         }
     }
 
@@ -140,6 +161,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun fetchBooksFromApi(query: String) {
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 val currentCategory = _state.value.selectedCategory
 
@@ -175,6 +197,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: Exception) {
                 e.printStackTrace()
                 _state.update { it.copy(allBooks = emptyList()) }
+            } finally {
+                _isLoading.value = false
             }
         }
     }
@@ -187,9 +211,6 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
             fetchBooksFromApi(currentQuery)
         }
     }
-
-    /*fun toggleFavoritesOnly() =
-        _state.update { it.copy(showFavoritesOnly = !it.showFavoritesOnly) }*/
 
     fun toggleFavorite(bookId: String) {
         viewModelScope.launch {
@@ -222,6 +243,15 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                         localCoverPhotoPath = null
                     )
                     repository.insertFavorite(favoriteBook)
+
+                    // Update the UI immediately for better UX
+                    _state.update { currentState ->
+                        currentState.copy(
+                            allBooks = currentState.allBooks.map { book ->
+                                if (book.id == bookId) book.copy(isFavorite = true) else book
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -230,6 +260,84 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     fun updateBookCoverPhoto(bookId: String, photoPath: String) {
         viewModelScope.launch {
             repository.updateCoverPhoto(bookId, photoPath)
+
+            // Update the UI immediately
+            _state.update { currentState ->
+                currentState.copy(
+                    allBooks = currentState.allBooks.map { book ->
+                        if (book.id == bookId) book.copy(localCoverPhotoPath = photoPath) else book
+                    }
+                )
+            }
         }
+    }
+
+    fun syncWithCloud() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _syncStatus.value = "Syncing with cloud..."
+            try {
+                repository.syncWithCloud()
+                _syncStatus.value = "Sync completed successfully"
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _syncStatus.value = "Sync failed: ${e.message}"
+            } finally {
+                _isLoading.value = false
+                // Clear sync status after 3 seconds
+                viewModelScope.launch {
+                    kotlinx.coroutines.delay(3000)
+                    _syncStatus.value = ""
+                }
+            }
+        }
+    }
+
+    fun checkUserStatus(): Boolean {
+        return Firebase.auth.currentUser != null
+    }
+
+    fun getCurrentUserId(): String? {
+        return Firebase.auth.currentUser?.uid
+    }
+
+    // Manual entry for offline books
+    fun addManualBook(title: String, author: String, year: Int, category: String = "General") {
+        viewModelScope.launch {
+            val bookId = "manual_${System.currentTimeMillis()}"
+            val favoriteBook = FavoriteBookEntity(
+                id = bookId,
+                title = title,
+                author = author,
+                year = year,
+                category = category,
+                coverImageUrl = null,
+                localCoverPhotoPath = null
+            )
+
+            repository.insertFavorite(favoriteBook)
+
+            // Update UI to show the new book
+            if (_state.value.searchQuery.isBlank()) {
+                _state.update { currentState ->
+                    currentState.copy(
+                        allBooks = currentState.allBooks + BookEntity(
+                            id = bookId,
+                            title = title,
+                            author = author,
+                            year = year,
+                            category = category,
+                            isFavorite = true
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    // Clear search results
+    fun clearSearch() {
+        _searchQuery.value = ""
+        _state.update { it.copy(searchQuery = "", allBooks = emptyList()) }
     }
 }
