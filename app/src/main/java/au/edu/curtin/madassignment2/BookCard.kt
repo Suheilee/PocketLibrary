@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +21,8 @@ import coil.compose.AsyncImage
 @Composable
 fun BookCard(
     book: BookEntity,
-    onFavoriteClick: (String) -> Unit = {}
+    onFavoriteClick: (String) -> Unit = {},
+    onShareClick: (BookEntity) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -82,12 +84,26 @@ fun BookCard(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            IconButton(onClick = { onFavoriteClick(book.id) }) {
-                Icon(
-                    imageVector = if (book.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (book.isFavorite) "Remove from favorites" else "Add to favorites",
-                    tint = if (book.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                )
+            // Action buttons row
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { onFavoriteClick(book.id) }) {
+                    Icon(
+                        imageVector = if (book.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (book.isFavorite) "Remove from favorites" else "Add to favorites",
+                        tint = if (book.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                IconButton(onClick = { onShareClick(book) }) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share book details",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
