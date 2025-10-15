@@ -3,4 +3,6 @@
     <external-files-path
         name="book_covers"
         path="Pictures/BookCovers/" />
+    <external-files-path name="my_files" path="." />
+    <cache-path name="my_cache" path="/" />
 </paths>

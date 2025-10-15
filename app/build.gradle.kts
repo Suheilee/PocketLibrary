@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.25"
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -63,8 +64,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.9.2")
 
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
+    // Fixed Retrofit versions (use version 2.x, not 3.0.0)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
@@ -73,4 +75,12 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+
+    // Firebase dependencies - simplified using BOM
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-analytics")
+//    implementation("com.google.android.gms:play-services-auth:20.7.0")
+//    implementation("com.firebaseui:firebase-ui-auth:8.0.2")
 }

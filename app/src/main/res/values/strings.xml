@@ -1,3 +1,22 @@
 <resources>
-    <string name="app_name">MAD Assignment 2</string>
+    <string name="app_name">Pocket Library</string>
+
+    <!-- Add these for Firebase -->
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
+    <string name="firebase_database_url">https://your-project.firebaseio.com</string>
+    <string name="gcm_defaultSenderId">YOUR_SENDER_ID</string>
+    <string name="google_api_key">YOUR_API_KEY</string>
+    <string name="google_app_id">YOUR_APP_ID</string>
+    <string name="google_crash_reporting_api_key">YOUR_CRASH_REPORTING_KEY</string>
+    <string name="project_id">YOUR_PROJECT_ID</string>
+    <string name="firebase_app_check_token"></string>
+
+    <!-- Login screen strings -->
+    <string name="sign_in">Sign In</string>
+    <string name="create_account">Create Account</string>
+    <string name="continue_as_guest">Continue as Guest</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="have_account">Already have an account? Sign In</string>
+    <string name="no_account">Don\'t have an account? Sign Up</string>
 </resources>
