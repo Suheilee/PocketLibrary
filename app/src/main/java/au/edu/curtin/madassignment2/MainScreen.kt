@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -41,8 +43,9 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
         )
     }
 
-    // Dialog state for remove cover confirmation
+    // Dialog states
     var bookToRemoveCover by remember { mutableStateOf<BookEntity?>(null) }
+    var showManualEntryDialog by remember { mutableStateOf(false) }
 
     // Camera permission launcher
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
@@ -110,7 +113,20 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
         context.startActivity(shareIntent)
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showManualEntryDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add book manually",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
+    ) { innerPadding ->
         if (isLandscape) {
             // Landscape Layout - Two column layout with filters on left
             Row(
@@ -217,6 +233,18 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
         }
     }
 
+    // Manual Book Entry Dialog
+    if (showManualEntryDialog) {
+        ManualBookEntryDialog(
+            onDismiss = { showManualEntryDialog = false },
+            onConfirm = { title, author, year, category ->
+                vm.addManualBook(title, author, year, category)
+                showManualEntryDialog = false
+            },
+            availableCategories = categories
+        )
+    }
+
     // Remove Cover Confirmation Dialog
     bookToRemoveCover?.let { book ->
         AlertDialog(
@@ -311,7 +339,7 @@ fun BookGridContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Search for books to add them to your library",
+                        text = "Search for books or tap + to add manually",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
