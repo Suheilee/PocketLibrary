@@ -15,17 +15,21 @@ data class AuthState(
 )
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
-    private val authService = AuthService(application.applicationContext)
-    private val firestoreService = FirestoreService()
+
+    // Lazy init so FirebaseAuth is not called before Firebase is ready
+    private val authService: AuthService by lazy { AuthService(application.applicationContext) }
+    private val firestoreService: FirestoreService by lazy { FirestoreService() }
 
     private val _authState = MutableStateFlow(AuthState())
     val authState: StateFlow<AuthState> = _authState
 
     init {
-        checkCurrentUser()
+        viewModelScope.launch {
+            checkCurrentUser()
+        }
     }
 
-    private fun checkCurrentUser() {
+    private suspend fun checkCurrentUser() {
         _authState.value = _authState.value.copy(
             isLoggedIn = authService.isUserLoggedIn
         )

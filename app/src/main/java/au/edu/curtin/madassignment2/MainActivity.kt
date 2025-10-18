@@ -4,31 +4,32 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.runtime.*
-import com.google.firebase.FirebaseApp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 
 class MainActivity : ComponentActivity() {
-    // Use the AndroidX lifecycle delegate for AndroidViewModel
-    private val authViewModel: AuthViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize Firebase
-        FirebaseApp.initializeApp(this)
-
         enableEdgeToEdge()
+
         setContent {
             PocketLibraryTheme {
+//                FirebaseTestScreen()
+
+//                 Track login state
                 var isLoggedIn by remember { mutableStateOf(false) }
 
-                // ✅ Use the one we created above, not Compose's viewModel()
-                val viewModel = authViewModel
+                // Safe ViewModel initialization
+                val authViewModel: AuthViewModel = viewModel()
 
-                LaunchedEffect(viewModel.authState.collectAsState().value.isLoggedIn) {
-                    isLoggedIn = viewModel.authState.value.isLoggedIn
+                // Collect auth state safely
+                val authState by authViewModel.authState.collectAsState()
+
+                // Update login state when authState changes
+                LaunchedEffect(authState.isLoggedIn) {
+                    isLoggedIn = authState.isLoggedIn
                 }
 
                 if (isLoggedIn) {
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     LoginScreen(
                         onLoginSuccess = { isLoggedIn = true },
-                        viewModel = viewModel
+                        viewModel = authViewModel
                     )
                 }
             }
