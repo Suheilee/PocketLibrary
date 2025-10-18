@@ -6,8 +6,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -24,7 +25,8 @@ fun BookCard(
     book: BookEntity,
     onFavoriteClick: (String) -> Unit = {},
     onShareClick: (BookEntity) -> Unit = {},
-    onCameraClick: (String) -> Unit = {}
+    onCameraClick: (String) -> Unit = {},
+    onRemoveCoverClick: (String) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -104,6 +106,7 @@ fun BookCard(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Favorite button
                 IconButton(onClick = { onFavoriteClick(book.id) }) {
                     Icon(
                         imageVector = if (book.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -126,6 +129,18 @@ fun BookCard(
                     }
                 }
 
+                // Remove cover button - only show if there's a custom cover
+                if (book.isFavorite && book.localCoverPhotoPath != null) {
+                    IconButton(onClick = { onRemoveCoverClick(book.id) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Remove cover photo",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+
+                // Share button
                 IconButton(onClick = { onShareClick(book) }) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -150,6 +165,24 @@ fun BookCardPreview() {
                 year = 1997,
                 category = "Fantasy",
                 isFavorite = true
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BookCardWithPhotoPreview() {
+    PocketLibraryTheme {
+        BookCard(
+            book = BookEntity(
+                id = "1",
+                title = "Harry Potter and the Philosopher's Stone",
+                author = "J.K. Rowling",
+                year = 1997,
+                category = "Fantasy",
+                isFavorite = true,
+                localCoverPhotoPath = "/path/to/photo.jpg"
             )
         )
     }

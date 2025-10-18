@@ -25,4 +25,7 @@ interface FavoriteBookDao {
 
     @Query("UPDATE favorite_books SET localCoverPhotoPath = :photoPath WHERE id = :bookId")
     suspend fun updateCoverPhoto(bookId: String, photoPath: String)
+
+    @Query("UPDATE favorite_books SET localCoverPhotoPath = NULL WHERE id = :bookId")
+    suspend fun removeCoverPhoto(bookId: String)
 }

@@ -259,15 +259,24 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateBookCoverPhoto(bookId: String, photoPath: String) {
         viewModelScope.launch {
-            repository.updateCoverPhoto(bookId, photoPath)
+            try {
+                repository.updateCoverPhoto(bookId, photoPath)
+                println("DEBUG: Cover photo updated for book $bookId")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("DEBUG: Error updating cover photo: ${e.message}")
+            }
+        }
+    }
 
-            // Update the UI immediately
-            _state.update { currentState ->
-                currentState.copy(
-                    allBooks = currentState.allBooks.map { book ->
-                        if (book.id == bookId) book.copy(localCoverPhotoPath = photoPath) else book
-                    }
-                )
+    fun removeBookCoverPhoto(bookId: String) {
+        viewModelScope.launch {
+            try {
+                repository.removeCoverPhoto(bookId)
+                println("DEBUG: Cover photo removed for book $bookId")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("DEBUG: Error removing cover photo: ${e.message}")
             }
         }
     }

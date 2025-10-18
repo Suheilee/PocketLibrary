@@ -1,6 +1,7 @@
 package au.edu.curtin.madassignment2
 
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 
 class FavoriteBookRepository(
     private val dao: FavoriteBookDao,
@@ -22,6 +23,16 @@ class FavoriteBookRepository(
     }
 
     suspend fun deleteFavoriteById(id: String) {
+        // Get the book first to delete its photo file
+        val book = dao.getFavoriteById(id)
+        book?.localCoverPhotoPath?.let { photoPath ->
+            try {
+                File(photoPath).delete()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
         dao.deleteFavoriteById(id)
         // Note: You might want to also delete from Firestore
     }
@@ -31,11 +42,58 @@ class FavoriteBookRepository(
     }
 
     suspend fun updateCoverPhoto(bookId: String, photoPath: String) {
-        dao.updateCoverPhoto(bookId, photoPath)
-        // Sync updated book to Firebase
-        val updatedBook = dao.getFavoriteById(bookId)
-        updatedBook?.let {
-            firestoreService.syncFavoriteBooks(listOf(it))
+        try {
+            dao.updateCoverPhoto(bookId, photoPath)
+            // Sync updated book to Firebase
+            val updatedBook = dao.getFavoriteById(bookId)
+            updatedBook?.let {
+                try {
+                    firestoreService.syncFavoriteBooks(listOf(it))
+                } catch (e: Exception) {
+                    // Handle offline - will sync later
+                    e.printStackTrace()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun removeCoverPhoto(bookId: String) {
+        try {
+            // Get the book to find the photo path
+            val book = dao.getFavoriteById(bookId)
+
+            // Delete the physical file
+            book?.localCoverPhotoPath?.let { photoPath ->
+                try {
+                    val file = File(photoPath)
+                    if (file.exists()) {
+                        val deleted = file.delete()
+                        println("DEBUG: File deletion ${if (deleted) "successful" else "failed"}: $photoPath")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
+            // Update database to remove the path
+            dao.removeCoverPhoto(bookId)
+
+            // Sync updated book to Firebase
+            val updatedBook = dao.getFavoriteById(bookId)
+            updatedBook?.let {
+                try {
+                    firestoreService.syncFavoriteBooks(listOf(it))
+                } catch (e: Exception) {
+                    // Handle offline - will sync later
+                    e.printStackTrace()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
         }
     }
 

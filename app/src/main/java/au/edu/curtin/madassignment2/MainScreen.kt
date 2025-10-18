@@ -11,11 +11,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -38,6 +40,9 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
+
+    // Dialog state for remove cover confirmation
+    var bookToRemoveCover by remember { mutableStateOf<BookEntity?>(null) }
 
     // Camera permission launcher
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
@@ -75,6 +80,12 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
         } else {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
+    }
+
+    // Handle remove cover click - show confirmation dialog
+    val onRemoveCoverClick: (String) -> Unit = { bookId ->
+        val book = state.filteredBooks.find { it.id == bookId }
+        bookToRemoveCover = book
     }
 
     // Share book
@@ -162,7 +173,8 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                         gridColumns = gridColumns,
                         onToggleFavorite = vm::toggleFavorite,
                         onShareBook = shareBook,
-                        onCameraClick = onCameraClick
+                        onCameraClick = onCameraClick,
+                        onRemoveCoverClick = onRemoveCoverClick
                     )
                 }
             }
@@ -198,10 +210,72 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                     gridColumns = gridColumns,
                     onToggleFavorite = vm::toggleFavorite,
                     onShareBook = shareBook,
-                    onCameraClick = onCameraClick
+                    onCameraClick = onCameraClick,
+                    onRemoveCoverClick = onRemoveCoverClick
                 )
             }
         }
+    }
+
+    // Remove Cover Confirmation Dialog
+    bookToRemoveCover?.let { book ->
+        AlertDialog(
+            onDismissRequest = { bookToRemoveCover = null },
+            icon = {
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_menu_delete),
+                    contentDescription = "Remove Cover",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = "Remove Cover Photo",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Are you sure you want to remove the custom cover photo for:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = book.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "The original cover will be restored.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        vm.removeBookCoverPhoto(book.id)
+                        bookToRemoveCover = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { bookToRemoveCover = null }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -211,7 +285,8 @@ fun BookGridContent(
     gridColumns: Int,
     onToggleFavorite: (String) -> Unit,
     onShareBook: (BookEntity) -> Unit,
-    onCameraClick: (String) -> Unit
+    onCameraClick: (String) -> Unit,
+    onRemoveCoverClick: (String) -> Unit
 ) {
     when {
         state.filteredBooks.isEmpty() && state.searchQuery.isEmpty() -> {
@@ -280,12 +355,16 @@ fun BookGridContent(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(state.filteredBooks) { book ->
+                items(
+                    items = state.filteredBooks,
+                    key = { book -> book.id }
+                ) { book ->
                     BookCard(
                         book = book,
                         onFavoriteClick = onToggleFavorite,
                         onShareClick = onShareBook,
-                        onCameraClick = onCameraClick
+                        onCameraClick = onCameraClick,
+                        onRemoveCoverClick = onRemoveCoverClick
                     )
                 }
             }
