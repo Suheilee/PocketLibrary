@@ -219,7 +219,9 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                 ) {
                     SearchBar(
                         searchQuery = state.searchQuery,
-                        onSearch = vm::onSearchQueryChange
+                        onSearch = vm::onSearchQueryChange,
+                        isOnline = state.isOnline && !myLibraryMode,
+                        myLibraryMode = myLibraryMode
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -283,7 +285,9 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                 ) {
                     SearchBar(
                         searchQuery = state.searchQuery,
-                        onSearch = vm::onSearchQueryChange
+                        onSearch = vm::onSearchQueryChange,
+                        isOnline = state.isOnline && !myLibraryMode,
+                        myLibraryMode = myLibraryMode
                     )
                 }
 
