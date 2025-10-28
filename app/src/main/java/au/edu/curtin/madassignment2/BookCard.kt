@@ -114,7 +114,19 @@ fun BookCard(
                         tint = if (book.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
-
+                // Share button
+                IconButton(onClick = { onShareClick(book) }) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share book details",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                 // Camera button - only show for favorites
                 if (book.isFavorite) {
                     IconButton(onClick = { onCameraClick(book.id) }) {
@@ -138,15 +150,6 @@ fun BookCard(
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
-                }
-
-                // Share button
-                IconButton(onClick = { onShareClick(book) }) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Share book details",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
                 }
             }
         }

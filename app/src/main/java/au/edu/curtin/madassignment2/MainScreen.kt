@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -32,6 +34,48 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
     val configuration = LocalConfiguration.current
     val context = LocalContext.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    //changes
+    var myLibraryMode by remember {mutableStateOf(false)}
+
+    var previousOnlineState by remember {mutableStateOf<Boolean?>(null)}
+
+    LaunchedEffect(state.isOnline) {
+        when {
+            previousOnlineState == null -> {
+                previousOnlineState = state.isOnline
+            }
+            previousOnlineState == false && state.isOnline -> {
+                // Change to now online state and show the toast
+                ToastManager.showOnlineToast(context)
+                previousOnlineState = true
+            }
+            previousOnlineState == true && !state.isOnline -> {
+                // Change to now offline state and show the toast
+                ToastManager.showOfflineToast(context)
+                previousOnlineState = false
+            }
+        }
+    }
+
+    val scrollState = rememberLazyGridState()
+
+    // Save scroll position
+    var savedScrollIndex by rememberSaveable { mutableStateOf(0) }
+    var savedScrollOffset by rememberSaveable { mutableStateOf(0) }
+
+    // Save current scroll position
+    LaunchedEffect(scrollState.firstVisibleItemIndex, scrollState.firstVisibleItemScrollOffset) {
+        savedScrollIndex = scrollState.firstVisibleItemIndex
+        savedScrollOffset = scrollState.firstVisibleItemScrollOffset
+    }
+
+    // Restore scroll position after configuration change
+    LaunchedEffect(state.filteredBooks.size) {
+        if (state.filteredBooks.isNotEmpty() && savedScrollIndex > 0) {
+            scrollState.scrollToItem(savedScrollIndex, savedScrollOffset)
+        }
+    }
 
     // Camera permission state
     var hasCameraPermission by remember {

@@ -17,6 +17,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     private val firestoreService = FirestoreService()
     private val repository = FavoriteBookRepository(database.favoriteBookDao(), firestoreService)
 
+    //CHANGED
+    private val networkMonitor = NetworkMonitor(application)
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
@@ -39,8 +41,9 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<BooksUiState> = combine(
         _state,
         repository.allFavoriteIds,
-        repository.allFavorites
-    ) { state, favoriteIds, favoriteBooks ->
+        repository.allFavorites,
+        networkMonitor.isOnline
+    ) { state, favoriteIds, favoriteBooks, isOnline ->
         // Convert database favorites to BookEntity
         val favoriteBooksAsEntities = favoriteBooks.map { favBook ->
             BookEntity(
@@ -56,7 +59,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Determine which books to show based on search state
-        val displayBooks = if (state.searchQuery.isBlank()) {
+        val displayBooks = if (state.searchQuery.isBlank() || !isOnline) {
             // No search - show favorites from database
             favoriteBooksAsEntities
         } else {
@@ -72,7 +75,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
         state.copy(
             favorites = favoriteIds.toSet(),
-            allBooks = displayBooks
+            allBooks = displayBooks,
+            isOnline = isOnline
         )
     }.stateIn(
         scope = viewModelScope,
@@ -89,7 +93,9 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 .distinctUntilChanged()
                 .filter { it.isNotBlank() }
                 .collect { query ->
-                    fetchBooksFromApi(query)
+                    if(state.value.isOnline){
+                        fetchBooksFromApi(query)
+                    }
                 }
         }
 

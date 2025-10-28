@@ -16,8 +16,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PocketLibraryTheme {
-//                FirebaseTestScreen()
-
 //                 Track login state
                 var isLoggedIn by remember { mutableStateOf(false) }
 

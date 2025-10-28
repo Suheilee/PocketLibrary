@@ -5,7 +5,8 @@ data class BooksUiState(
     val selectedCategory: String = "All",
     val showFavoritesOnly: Boolean = false,
     val searchQuery: String = "",
-    val favorites: Set<String> = emptySet()
+    val favorites: Set<String> = emptySet(),
+    val isOnline: Boolean = true
 ) {
     val filteredBooks: List<BookEntity>
         get() = allBooks
@@ -18,7 +19,13 @@ data class BooksUiState(
                 // Filter by favorites if toggle is on
                 val matchesFav =
                     if (showFavoritesOnly) book.isFavorite else true
-
+                // Local search filter (for offline mode)
+                val matchesSearch = if (searchQuery.isNotBlank() && !isOnline) {
+                    book.title.contains(searchQuery, ignoreCase = true) ||
+                            book.author.contains(searchQuery, ignoreCase = true)
+                } else {
+                    true
+                }
                 matchesCategory && matchesFav
             }
 
