@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -158,6 +159,37 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
     }
 
     Scaffold(
+        topBar = {
+            // Simple Row-based custom top bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (myLibraryMode) "My Library" else "Pocket Library",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+
+                Button(
+                    onClick = {
+                        myLibraryMode = !myLibraryMode
+                        if (myLibraryMode) {
+                            vm.onSearchQueryChange("")
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (myLibraryMode) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(if (myLibraryMode) "Online Search" else "My Library")
+                }
+            }
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showManualEntryDialog = true },

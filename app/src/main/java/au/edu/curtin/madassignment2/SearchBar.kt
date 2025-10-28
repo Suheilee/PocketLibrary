@@ -17,14 +17,20 @@ import au.edu.curtin.madassignment2.ui.theme.PocketLibraryTheme
 @Composable
 fun SearchBar(
     searchQuery: String = "",
-    onSearch: (String) -> Unit = {}
+    onSearch: (String) -> Unit = {},
+    isOnline: Boolean = true,
+    myLibraryMode: Boolean = false
 ) {
     OutlinedTextField(
         value = searchQuery,
         onValueChange = onSearch,
         placeholder = {
             Text(
-                text = "Search books by title or author...",
+                text = if (isOnline) {
+                    "Search books by title or author..."
+                } else {
+                    "Search saved books..."
+                },
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
@@ -34,7 +40,11 @@ fun SearchBar(
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search Icon",
-                tint = MaterialTheme.colorScheme.primary
+                tint = if (isOnline) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
         },
         trailingIcon = {
@@ -59,7 +69,13 @@ fun SearchBar(
         ),
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Search
-        )
+        ),
+        supportingText = if (myLibraryMode && searchQuery.isEmpty()){
+            { Text("Searching My Library", style = MaterialTheme.typography.bodySmall) }
+        } else
+            if (!isOnline && searchQuery.isEmpty()) {
+                { Text("Offline - Searching saved books only", style = MaterialTheme.typography.bodySmall) }
+            } else null
     )
 }
 
@@ -67,4 +83,10 @@ fun SearchBar(
 @Composable
 fun SearchBarPreview() {
     PocketLibraryTheme { SearchBar() }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SearchBarOfflinePreview() {
+    PocketLibraryTheme { SearchBar(isOnline = false) }
 }
