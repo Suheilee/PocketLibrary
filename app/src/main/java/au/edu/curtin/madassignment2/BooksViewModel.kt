@@ -61,7 +61,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
         val displayBooks =
             if (isLibraryMode) {
-                // ✅ Always show local favourites in library mode
+                // Always show local favourites in library mode
                 val query = state.searchQuery
                 if (query.isBlank()) {
                     favoriteBooksAsEntities
