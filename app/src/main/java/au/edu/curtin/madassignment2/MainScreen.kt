@@ -178,8 +178,9 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                 Button(
                     onClick = {
                         myLibraryMode = !myLibraryMode
+                        vm.updateLibraryMode(true)
                         if (myLibraryMode) {
-                            vm.onSearchQueryChange("")
+                            vm.onSearchQueryChange("", myLibraryMode)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -219,7 +220,7 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                 ) {
                     SearchBar(
                         searchQuery = state.searchQuery,
-                        onSearch = vm::onSearchQueryChange,
+                        onSearch = { query -> vm.onSearchQueryChange(query, myLibraryMode)},
                         isOnline = state.isOnline && !myLibraryMode,
                         myLibraryMode = myLibraryMode
                     )
@@ -285,7 +286,7 @@ fun MainScreen(vm: BooksViewModel = viewModel()) {
                 ) {
                     SearchBar(
                         searchQuery = state.searchQuery,
-                        onSearch = vm::onSearchQueryChange,
+                        onSearch = { query -> vm.onSearchQueryChange(query, myLibraryMode) },
                         isOnline = state.isOnline && !myLibraryMode,
                         myLibraryMode = myLibraryMode
                     )

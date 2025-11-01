@@ -6,7 +6,8 @@ data class BooksUiState(
     val showFavoritesOnly: Boolean = false,
     val searchQuery: String = "",
     val favorites: Set<String> = emptySet(),
-    val isOnline: Boolean = true
+    val isOnline: Boolean = true,
+    val isLibraryMode: Boolean = false
 ) {
     val filteredBooks: List<BookEntity>
         get() = allBooks

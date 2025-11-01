@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlin.getValue
 
 data class AuthState(
     val isLoggedIn: Boolean = false,
@@ -19,6 +20,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     // Lazy init so FirebaseAuth is not called before Firebase is ready
     private val authService: AuthService by lazy { AuthService(application.applicationContext) }
     private val firestoreService: FirestoreService by lazy { FirestoreService() }
+
+    // Create the repository using your existing Room database
+    private val favoriteBookDao by lazy {
+        AppDatabase.getDatabase(application.applicationContext).favoriteBookDao()
+    }
+    private val favoriteBookRepository by lazy {
+        FavoriteBookRepository(favoriteBookDao, firestoreService)
+    }
 
     private val _authState = MutableStateFlow(AuthState())
     val authState: StateFlow<AuthState> = _authState
@@ -40,7 +49,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val result = authService.signInWithEmailAndPassword(email, password)
             if (result.isSuccess) {
-                syncUserData()
+                syncUserDataAndFavorites()
                 _authState.value = AuthState(isLoggedIn = true)
             } else {
                 _authState.value = _authState.value.copy(
@@ -56,7 +65,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val result = authService.createUserWithEmailAndPassword(email, password)
             if (result.isSuccess) {
-                syncUserData()
+                syncUserDataAndFavorites()
                 _authState.value = AuthState(isLoggedIn = true)
             } else {
                 _authState.value = _authState.value.copy(
@@ -72,7 +81,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val result = authService.signInAnonymously()
             if (result.isSuccess) {
-                syncUserData()
+                syncUserDataAndFavorites()
                 _authState.value = AuthState(isLoggedIn = true)
             } else {
                 _authState.value = _authState.value.copy(
@@ -88,10 +97,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _authState.value = AuthState()
     }
 
-    private suspend fun syncUserData() {
+    private suspend fun syncUserDataAndFavorites() {
         try {
             val userData = firestoreService.getUserData()
             _authState.value = _authState.value.copy(currentUser = userData)
+
+            // 🟢 NEW: sync favourites from Firestore into local Room
+            favoriteBookRepository.syncWithCloud()
+
         } catch (e: Exception) {
             e.printStackTrace()
         }

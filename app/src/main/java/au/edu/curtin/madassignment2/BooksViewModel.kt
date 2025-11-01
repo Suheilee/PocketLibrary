@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -16,151 +17,145 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
     private val firestoreService = FirestoreService()
     private val repository = FavoriteBookRepository(database.favoriteBookDao(), firestoreService)
-
-    //CHANGED
     private val networkMonitor = NetworkMonitor(application)
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
 
+    // JSON & API setup
+    private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://openlibrary.org/")
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
-
     private val api = retrofit.create(OpenLibraryApi::class.java)
 
+    // State and helper flows
     private val _state = MutableStateFlow(BooksUiState())
     private val _isLoading = MutableStateFlow(false)
     private val _syncStatus = MutableStateFlow("")
+    private val _searchQuery = MutableStateFlow("")
+    private val _isLibraryMode = MutableStateFlow(false)
 
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     val syncStatus: StateFlow<String> = _syncStatus.asStateFlow()
 
-    // Combine API books with database favorites
+    // Combined view state
     val state: StateFlow<BooksUiState> = combine(
         _state,
         repository.allFavoriteIds,
         repository.allFavorites,
-        networkMonitor.isOnline
-    ) { state, favoriteIds, favoriteBooks, isOnline ->
-        // Convert database favorites to BookEntity
-        val favoriteBooksAsEntities = favoriteBooks.map { favBook ->
+        networkMonitor.isOnline,
+        _isLibraryMode
+    ) { state, favoriteIds, favoriteBooks, isOnline, isLibraryMode ->
+
+        val favoriteBooksAsEntities = favoriteBooks.map { fav ->
             BookEntity(
-                id = favBook.id,
-                title = favBook.title,
-                author = favBook.author,
-                year = favBook.year,
-                category = favBook.category,
-                coverImageUrl = favBook.coverImageUrl,
-                localCoverPhotoPath = favBook.localCoverPhotoPath,
+                id = fav.id,
+                title = fav.title,
+                author = fav.author,
+                year = fav.year,
+                category = fav.category,
+                coverImageUrl = fav.coverImageUrl,
+                localCoverPhotoPath = fav.localCoverPhotoPath,
                 isFavorite = true
             )
         }
 
-        // Determine which books to show based on search state
-        val displayBooks = if (state.searchQuery.isBlank() || !isOnline) {
-            // No search - show favorites from database
-            favoriteBooksAsEntities
-        } else {
-            // Active search shows API results with updated favorite status
-            state.allBooks.map { book ->
-                if (favoriteIds.contains(book.id)) {
-                    book.copy(isFavorite = true)
+        val displayBooks =
+            if (isLibraryMode) {
+                // ✅ Always show local favourites in library mode
+                val query = state.searchQuery
+                if (query.isBlank()) {
+                    favoriteBooksAsEntities
                 } else {
-                    book
+                    favoriteBooksAsEntities.filter { book ->
+                        book.title.contains(query, ignoreCase = true) ||
+                                book.author.contains(query, ignoreCase = true)
+                    }
+                }
+            } else if (state.searchQuery.isBlank() || !isOnline) {
+                // No search → show favourites
+                favoriteBooksAsEntities
+            } else {
+                // Online search → display fetched results with favourite status updated
+                state.allBooks.map { book ->
+                    book.copy(isFavorite = favoriteIds.contains(book.id))
                 }
             }
-        }
 
         state.copy(
             favorites = favoriteIds.toSet(),
             allBooks = displayBooks,
-            isOnline = isOnline
+            isOnline = isOnline,
+            isLibraryMode = isLibraryMode
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = BooksUiState()
-    )
-
-    private val _searchQuery = MutableStateFlow("")
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BooksUiState())
 
     init {
+        // Observe search query changes (for online search only)
         viewModelScope.launch {
             _searchQuery
                 .debounce(300)
                 .distinctUntilChanged()
-                .filter { it.isNotBlank() }
                 .collect { query ->
-                    if(state.value.isOnline){
+                    if (!_isLibraryMode.value && state.value.isOnline && query.isNotBlank()) {
                         fetchBooksFromApi(query)
                     }
                 }
         }
 
-        // Sync with cloud on startup if user is logged in
+        // Sync cloud favourites on startup if logged in
         viewModelScope.launch {
-            if (Firebase.auth.currentUser != null) {
-                syncWithCloud()
+            if (Firebase.auth.currentUser != null) syncWithCloud()
+        }
+    }
+
+    // Called from UI when typing in search bar
+    fun onSearchQueryChange(query: String, isLibraryMode: Boolean) {
+        _isLibraryMode.value = isLibraryMode
+        _searchQuery.value = query
+        _state.update { it.copy(searchQuery = query) }
+
+        // For Library Mode, filter local favourites manually
+        if (isLibraryMode) {
+            viewModelScope.launch {
+                val favBooks = repository.allFavorites.first()
+                val filtered = if (query.isBlank()) {
+                    favBooks
+                } else {
+                    favBooks.filter { book ->
+                        book.title.contains(query, ignoreCase = true) ||
+                                book.author.contains(query, ignoreCase = true)
+                    }
+                }.map {
+                    BookEntity(
+                        id = it.id,
+                        title = it.title,
+                        author = it.author,
+                        year = it.year,
+                        category = it.category,
+                        coverImageUrl = it.coverImageUrl,
+                        localCoverPhotoPath = it.localCoverPhotoPath,
+                        isFavorite = true
+                    )
+                }
+
+                _state.update { current -> current.copy(allBooks = filtered) }
             }
         }
     }
 
-    fun onSearchQueryChange(query: String) {
-        _searchQuery.value = query
-        _state.update { it.copy(searchQuery = query) }
-
-        if (query.isBlank()) {
-            _state.update { it.copy(allBooks = emptyList()) }
-        }
-    }
-
     private fun categorizeBook(title: String, author: String): String {
-        val titleLower = title.lowercase()
-        val authorLower = author.lowercase()
+        val t = title.lowercase()
+        val a = author.lowercase()
 
         return when {
-            titleLower.contains("harry potter") ||
-                    titleLower.contains("lord of the rings") ||
-                    titleLower.contains("hobbit") ||
-                    titleLower.contains("narnia") ||
-                    titleLower.contains("fantasy") ||
-                    titleLower.contains("dragon") ||
-                    titleLower.contains("wizard") ||
-                    titleLower.contains("magic") ||
-                    authorLower.contains("tolkien") ||
-                    authorLower.contains("rowling") ||
-                    authorLower.contains("sanderson") -> "Fantasy"
-
-            titleLower.contains("pride and prejudice") ||
-                    titleLower.contains("outlander") ||
-                    titleLower.contains("romance") ||
-                    titleLower.contains("love") ||
-                    authorLower.contains("austen") ||
-                    authorLower.contains("sparks") -> "Romance"
-
-            titleLower.contains("sherlock") ||
-                    titleLower.contains("murder") ||
-                    titleLower.contains("detective") ||
-                    titleLower.contains("mystery") ||
-                    titleLower.contains("crime") ||
-                    authorLower.contains("christie") ||
-                    authorLower.contains("doyle") ||
-                    authorLower.contains("conan doyle") -> "Mystery"
-
-            titleLower.contains("1984") ||
-                    titleLower.contains("gatsby") ||
-                    titleLower.contains("mockingbird") ||
-                    titleLower.contains("catcher") ||
-                    titleLower.contains("moby dick") ||
-                    titleLower.contains("jane eyre") ||
-                    authorLower.contains("orwell") ||
-                    authorLower.contains("fitzgerald") ||
-                    authorLower.contains("steinbeck") ||
-                    authorLower.contains("dickens") ||
-                    authorLower.contains("hemingway") -> "Classic"
-
+            listOf("harry potter", "lord of the rings", "hobbit", "narnia", "fantasy", "dragon", "wizard", "magic").any { it in t } ||
+                    listOf("tolkien", "rowling", "sanderson").any { it in a } -> "Fantasy"
+            listOf("pride and prejudice", "outlander", "romance", "love").any { it in t } ||
+                    listOf("austen", "sparks").any { it in a } -> "Romance"
+            listOf("sherlock", "murder", "detective", "mystery", "crime").any { it in t } ||
+                    listOf("christie", "doyle", "conan doyle").any { it in a } -> "Mystery"
+            listOf("1984", "gatsby", "mockingbird", "catcher", "moby dick", "jane eyre").any { it in t } ||
+                    listOf("orwell", "fitzgerald", "steinbeck", "dickens", "hemingway").any { it in a } -> "Classic"
             else -> "General"
         }
     }
@@ -170,20 +165,15 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
             _isLoading.value = true
             try {
                 val currentCategory = _state.value.selectedCategory
-
                 val searchQuery = if (currentCategory != "All") {
                     "$query subject:${currentCategory.lowercase()}"
-                } else {
-                    query
-                }
+                } else query
 
                 val response = api.searchBooks(searchQuery)
-
                 val books = response.docs.mapNotNull { book ->
                     if (book.key != null && book.title != null) {
                         val author = book.author_name?.joinToString(", ") ?: "Unknown Author"
                         val category = categorizeBook(book.title, author)
-
                         BookEntity(
                             id = book.key,
                             title = book.title,
@@ -196,10 +186,7 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     } else null
                 }
-
-                _state.update {
-                    it.copy(allBooks = books)
-                }
+                _state.update { it.copy(allBooks = books) }
             } catch (e: Exception) {
                 e.printStackTrace()
                 _state.update { it.copy(allBooks = emptyList()) }
@@ -211,53 +198,37 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
 
     fun onCategorySelected(category: String) {
         _state.update { it.copy(selectedCategory = category) }
-
-        val currentQuery = _state.value.searchQuery
-        if (currentQuery.isNotBlank()) {
-            fetchBooksFromApi(currentQuery)
+        if (_state.value.searchQuery.isNotBlank() && !_isLibraryMode.value) {
+            fetchBooksFromApi(_state.value.searchQuery)
         }
     }
 
     fun toggleFavorite(bookId: String) {
         viewModelScope.launch {
-            val currentState = state.value
-            val isFavorite = currentState.favorites.contains(bookId)
+            val current = state.value
+            val isFavorite = current.favorites.contains(bookId)
 
             if (isFavorite) {
-                // Remove from database
                 repository.deleteFavoriteById(bookId)
-
-                // If we're viewing database books (no search), update the local list
-                if (currentState.searchQuery.isBlank()) {
-                    _state.update {
-                        it.copy(allBooks = it.allBooks.filter { book -> book.id != bookId })
-                    }
+                if (current.searchQuery.isBlank() || _isLibraryMode.value) {
+                    _state.update { it.copy(allBooks = it.allBooks.filter { b -> b.id != bookId }) }
                 }
             } else {
-                // Find the book to add
-                val currentBook = currentState.allBooks.find { it.id == bookId }
-
-                if (currentBook != null) {
-                    // Add to database with the properly categorized category
-                    val favoriteBook = FavoriteBookEntity(
-                        id = currentBook.id,
-                        title = currentBook.title,
-                        author = currentBook.author,
-                        year = currentBook.year,
-                        category = currentBook.category,
-                        coverImageUrl = currentBook.coverImageUrl,
-                        localCoverPhotoPath = null
-                    )
-                    repository.insertFavorite(favoriteBook)
-
-                    // Update the UI immediately for better UX
-                    _state.update { currentState ->
-                        currentState.copy(
-                            allBooks = currentState.allBooks.map { book ->
-                                if (book.id == bookId) book.copy(isFavorite = true) else book
-                            }
-                        )
-                    }
+                val currentBook = current.allBooks.find { it.id == bookId } ?: return@launch
+                val favoriteBook = FavoriteBookEntity(
+                    id = currentBook.id,
+                    title = currentBook.title,
+                    author = currentBook.author,
+                    year = currentBook.year,
+                    category = currentBook.category,
+                    coverImageUrl = currentBook.coverImageUrl,
+                    localCoverPhotoPath = null
+                )
+                repository.insertFavorite(favoriteBook)
+                _state.update {
+                    it.copy(allBooks = it.allBooks.map { b ->
+                        if (b.id == bookId) b.copy(isFavorite = true) else b
+                    })
                 }
             }
         }
@@ -267,10 +238,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.updateCoverPhoto(bookId, photoPath)
-                println("DEBUG: Cover photo updated for book $bookId")
             } catch (e: Exception) {
                 e.printStackTrace()
-                println("DEBUG: Error updating cover photo: ${e.message}")
             }
         }
     }
@@ -279,10 +248,8 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.removeCoverPhoto(bookId)
-                println("DEBUG: Cover photo removed for book $bookId")
             } catch (e: Exception) {
                 e.printStackTrace()
-                println("DEBUG: Error removing cover photo: ${e.message}")
             }
         }
     }
@@ -299,29 +266,20 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 _syncStatus.value = "Sync failed: ${e.message}"
             } finally {
                 _isLoading.value = false
-                // Clear sync status after 3 seconds
-                viewModelScope.launch {
-                    kotlinx.coroutines.delay(3000)
-                    _syncStatus.value = ""
-                }
+                delay(3000)
+                _syncStatus.value = ""
             }
         }
     }
 
-    fun checkUserStatus(): Boolean {
-        return Firebase.auth.currentUser != null
-    }
+    fun checkUserStatus(): Boolean = Firebase.auth.currentUser != null
+    fun getCurrentUserId(): String? = Firebase.auth.currentUser?.uid
 
-    fun getCurrentUserId(): String? {
-        return Firebase.auth.currentUser?.uid
-    }
-
-    // Manual entry for offline books
     fun addManualBook(title: String, author: String, year: Int, category: String = "General") {
         viewModelScope.launch {
-            val bookId = "manual_${System.currentTimeMillis()}"
-            val favoriteBook = FavoriteBookEntity(
-                id = bookId,
+            val id = "manual_${System.currentTimeMillis()}"
+            val book = FavoriteBookEntity(
+                id = id,
                 title = title,
                 author = author,
                 year = year,
@@ -329,30 +287,29 @@ class BooksViewModel(application: Application) : AndroidViewModel(application) {
                 coverImageUrl = null,
                 localCoverPhotoPath = null
             )
-
-            repository.insertFavorite(favoriteBook)
-
-            // Update UI to show the new book
-            if (_state.value.searchQuery.isBlank()) {
-                _state.update { currentState ->
-                    currentState.copy(
-                        allBooks = currentState.allBooks + BookEntity(
-                            id = bookId,
-                            title = title,
-                            author = author,
-                            year = year,
-                            category = category,
-                            isFavorite = true
-                        )
-                    )
+            repository.insertFavorite(book)
+            if (_state.value.searchQuery.isBlank() || _isLibraryMode.value) {
+                _state.update {
+                    it.copy(allBooks = it.allBooks + BookEntity(
+                        id = id,
+                        title = title,
+                        author = author,
+                        year = year,
+                        category = category,
+                        isFavorite = true
+                    ))
                 }
             }
         }
     }
 
-    // Clear search results
     fun clearSearch() {
         _searchQuery.value = ""
         _state.update { it.copy(searchQuery = "", allBooks = emptyList()) }
     }
+
+    fun updateLibraryMode(isLibraryMode: Boolean) {
+        _state.update { it.copy(isLibraryMode = isLibraryMode) }
+    }
+
 }
